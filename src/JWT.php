@@ -2,6 +2,7 @@
 
 namespace Lindelius\JWT;
 
+use ArrayAccess;
 use DomainException;
 use InvalidArgumentException;
 use Lindelius\JWT\Exception\BeforeValidException;
@@ -15,7 +16,7 @@ use Lindelius\JWT\Exception\RuntimeException;
  * Class JWT
  *
  * @author  Tom Lindelius <tom.lindelius@vivamedia.se>
- * @version 2017-02-24
+ * @version 2017-02-25
  */
 class JWT
 {
@@ -25,6 +26,14 @@ class JWT
      * @var string
      */
     private $algorithm;
+
+    /**
+     * The allowed hashing algorithms. If empty, all supported algorithms are
+     * considered allowed.
+     *
+     * @var array
+     */
+    protected static $allowedAlgorithms = [];
 
     /**
      * The default hashing algorithm.
@@ -101,8 +110,8 @@ class JWT
             $algorithm = static::$defaultAlgorithm;
         }
 
-        if (empty(static::$supportedAlgorithms[$algorithm])) {
-            throw new DomainException('Unsupported algorithm.');
+        if (empty(static::$supportedAlgorithms[$algorithm]) || !in_array($algorithm, static::getAllowedAlgorithms())) {
+            throw new DomainException('Unsupported hashing algorithm.');
         }
 
         $this->algorithm = $algorithm;
@@ -113,66 +122,33 @@ class JWT
     }
 
     /**
-     * Gets the current value for a given payload field.
+     * Gets the current value for a given claim.
      *
-     * @param  string $field
+     * @param  string $claimName
      * @return mixed
      * @see    http://php.net/manual/en/language.oop5.overloading.php#object.get
      */
-    public function __get($field)
+    public function __get($claimName)
     {
-        if (strpos($field, '.') === false) {
-            return isset($this->payload[$field]) ? $this->payload[$field] : null;
+        if (isset($this->payload[$claimName])) {
+            return $this->payload[$claimName];
         }
 
-        $data     = $this->payload;
-        $segments = explode('.', $field);
-
-        foreach ($segments as $segment) {
-            if (!array_key_exists($segment, $data)) {
-                return null;
-            }
-
-            $data = $data[$segment];
-        }
-
-        return $data;
+        return null;
     }
 
     /**
-     * Sets a new value for a given payload field.
+     * Sets a new value for a given claim.
      *
-     * @param  string $field
-     * @param  mixed  $newValue
-     * @see    http://php.net/manual/en/language.oop5.overloading.php#object.set
-     * @throws InvalidArgumentException
+     * @param string $claimName
+     * @param mixed  $newValue
+     * @see   http://php.net/manual/en/language.oop5.overloading.php#object.set
      */
-    public function __set($field, $newValue)
+    public function __set($claimName, $newValue)
     {
-        $newPayload    = &$this->payload;
-        $segments      = explode('.', $field);
-        $firstSegment  = $segments[0];
-        $payloadBackup = isset($this->payload[$firstSegment]) ? $this->payload[$firstSegment] : null;
+        $this->payload[$claimName] = $newValue;
 
-        try {
-            foreach ($segments as $segment) {
-                if (trim($segment) === '') {
-                    throw new InvalidArgumentException('The payload field name is invalid.');
-                }
-
-                if (isset($newPayload) && !is_array($newPayload)) {
-                    $newPayload = [];
-                }
-
-                $newPayload = &$newPayload[$segment];
-            }
-
-            $newPayload = $newValue;
-            $this->hash = null;
-        } catch (InvalidArgumentException $e) {
-            $this->payload[$firstSegment] = $payloadBackup;
-            throw $e;
-        }
+        $this->hash = null;
     }
 
     /**
@@ -180,22 +156,19 @@ class JWT
      *
      * @param string          $jwt
      * @param string|resource $key
-     * @param array           $allowedAlgorithms
      * @return static
      * @throws BeforeValidException
+     * @throws DomainException
      * @throws ExpiredException
      * @throws InvalidArgumentException
      * @throws InvalidException
      * @throws InvalidSignatureException
+     * @throws RuntimeException
      */
-    public static function decode($jwt, $key, array $allowedAlgorithms = [])
+    public static function decode($jwt, $key)
     {
         if (empty($jwt) || !is_string($jwt)) {
             throw new InvalidArgumentException('Invalid JWT.');
-        }
-
-        if (empty($key) || (!is_string($key) && !is_resource($key))) {
-            throw new InvalidArgumentException('Invalid key.');
         }
 
         $segments = explode('.', $jwt);
@@ -220,12 +193,24 @@ class JWT
             throw new InvalidException('Invalid JWT payload.');
         }
 
-        if (empty($allowedAlgorithms)) {
-            $allowedAlgorithms = array_keys(static::$supportedAlgorithms);
+        if (empty($key) || (!is_string($key) && !is_resource($key))) {
+            throw new InvalidArgumentException('Invalid key.');
         }
 
-        if (empty($header['alg']) || !in_array($header['alg'], $allowedAlgorithms)) {
+        if (is_array($key) || $key instanceof ArrayAccess) {
+            if (isset($header['kid']) && isset($key[$header['kid']])) {
+                $key = $key[$header['kid']];
+            } else {
+                throw new InvalidException('Invalid "kid" value. Unable to lookup secret key.');
+            }
+        }
+
+        if (empty($header['alg']) || !is_string($header['alg'])) {
             throw new InvalidException('Invalid hashing algorithm.');
+        }
+
+        if (empty(static::$supportedAlgorithms[$header['alg']]) || !in_array($header['alg'], static::getAllowedAlgorithms())) {
+            throw new DomainException('Unsupported hashing algorithm.');
         }
 
         /**
@@ -311,6 +296,20 @@ class JWT
     }
 
     /**
+     * Gets the allowed hashing algorithms.
+     *
+     * @return array
+     */
+    public static function getAllowedAlgorithms()
+    {
+        if (empty(static::$allowedAlgorithms)) {
+            return array_keys(static::$supportedAlgorithms);
+        }
+
+        return static::$allowedAlgorithms;
+    }
+
+    /**
      * Gets the JWT hash, if the JWT has been encoded.
      *
      * @return string|null
@@ -369,18 +368,23 @@ class JWT
      * @param array           $header
      * @param array           $payload
      * @return static
-     * @throws InvalidArgumentException
+     * @throws DomainException
+     * @throws InvalidException
      */
     public static function newInstance($key, array $header = [], array $payload = [])
     {
-        if (empty($header['alg']) || !is_string($header['alg']) || empty(static::$supportedAlgorithms[$header['alg']])) {
-            throw new InvalidArgumentException('Invalid hashing algorithm.');
+        if (empty($header['alg']) || !is_string($header['alg'])) {
+            throw new InvalidException('Invalid hashing algorithm.');
+        }
+
+        if (empty(static::$supportedAlgorithms[$header['alg']]) || !in_array($header['alg'], static::getAllowedAlgorithms())) {
+            throw new DomainException('Unsupported hashing algorithm.');
         }
 
         $jwt = new static($key, $header['alg'], $header);
 
-        foreach ($payload as $field => $value) {
-            $jwt->{$field} = $value;
+        foreach ($payload as $claimName => $claimValue) {
+            $jwt->{$claimName} = $claimValue;
         }
 
         return $jwt;
