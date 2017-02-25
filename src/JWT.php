@@ -15,7 +15,7 @@ use Lindelius\JWT\Exception\RuntimeException;
 /**
  * Class JWT
  *
- * @author  Tom Lindelius <tom.lindelius@vivamedia.se>
+ * @author  Tom Lindelius <tom.lindelius@gmail.com>
  * @version 2017-02-25
  */
 class JWT
