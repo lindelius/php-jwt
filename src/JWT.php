@@ -106,6 +106,10 @@ class JWT
 
         $this->key = $key;
 
+        if ($algorithm !== null && !is_string($algorithm)) {
+            throw new InvalidArgumentException('Invalid hashing algorithm.');
+        }
+
         if (empty($algorithm)) {
             $algorithm = static::$defaultAlgorithm;
         }
@@ -148,7 +152,21 @@ class JWT
     {
         $this->payload[$claimName] = $newValue;
 
+        /**
+         * If the JWT has been previously encoded, clear the hash since it is
+         * no longer valid.
+         */
         $this->hash = null;
+    }
+
+    /**
+     * Convert the JWT to its string representation.
+     *
+     * @return string
+     */
+    public function __toString()
+    {
+        return (string) $this->getHash();
     }
 
     /**
@@ -310,6 +328,16 @@ class JWT
     }
 
     /**
+     * Gets the set of claims included in the JWT.
+     *
+     * @return array
+     */
+    public function getClaims()
+    {
+        return $this->getPayload();
+    }
+
+    /**
      * Gets the JWT hash, if the JWT has been encoded.
      *
      * @return string|null
@@ -317,6 +345,26 @@ class JWT
     public function getHash()
     {
         return $this->hash;
+    }
+
+    /**
+     * Gets the JWT header.
+     *
+     * @return array
+     */
+    public function getHeader()
+    {
+        return $this->header;
+    }
+
+    /**
+     * Gets the JWT payload.
+     *
+     * @return array
+     */
+    public function getPayload()
+    {
+        return $this->payload;
     }
 
     /**
