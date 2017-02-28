@@ -264,7 +264,7 @@ class JWT
             throw new BeforeValidException('The JWT is not yet valid.');
         }
 
-        if (isset($payload['iat']) && is_numeric($payload['iat']) && (float) $payload['nbf'] > ($timestamp + static::$leeway)) {
+        if (isset($payload['iat']) && is_numeric($payload['iat']) && (float) $payload['iat'] > ($timestamp + static::$leeway)) {
             throw new BeforeValidException('The JWT is not yet valid.');
         }
 
