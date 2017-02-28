@@ -5,6 +5,7 @@ namespace Lindelius\JWT;
 use ArrayAccess;
 use DomainException;
 use InvalidArgumentException;
+use Iterator;
 use Lindelius\JWT\Exception\BeforeValidException;
 use Lindelius\JWT\Exception\ExpiredException;
 use Lindelius\JWT\Exception\InvalidException;
@@ -18,7 +19,7 @@ use Lindelius\JWT\Exception\RuntimeException;
  * @author  Tom Lindelius <tom.lindelius@gmail.com>
  * @version 2017-02-25
  */
-class JWT
+class JWT implements Iterator
 {
     /**
      * The hashing algorithm to use when encoding the JWT.
@@ -167,6 +168,16 @@ class JWT
     public function __toString()
     {
         return (string) $this->getHash();
+    }
+
+    /**
+     * Gets the value of the "current" claim in the payload array.
+     *
+     * @return mixed
+     */
+    public function current()
+    {
+        return current($this->payload);
     }
 
     /**
@@ -410,6 +421,16 @@ class JWT
     }
 
     /**
+     * Gets the name of the "current" claim in the payload array.
+     *
+     * @return string
+     */
+    public function key()
+    {
+        return key($this->payload);
+    }
+
+    /**
      * Gets a new instance of the model.
      *
      * @param string|resource $key
@@ -436,5 +457,33 @@ class JWT
         }
 
         return $jwt;
+    }
+
+    /**
+     * Advances the iterator to the "next" claim in the payload array.
+     */
+    public function next()
+    {
+        next($this->payload);
+    }
+
+    /**
+     * Rewinds the payload iterator.
+     */
+    public function rewind()
+    {
+        reset($this->payload);
+    }
+
+    /**
+     * Checks whether the current position in the payload array is valid.
+     *
+     * @return bool
+     */
+    public function valid()
+    {
+        $key = key($this->payload);
+
+        return $key !== null && $key !== false;
     }
 }
