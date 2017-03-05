@@ -380,6 +380,21 @@ class JWT implements Iterator
     }
 
     /**
+     * Gets the current value for a given header field.
+     *
+     * @param string $name
+     * @return mixed|null
+     */
+    public function getHeaderField($name)
+    {
+        if (isset($this->header[$name])) {
+            return $this->header[$name];
+        }
+
+        return null;
+    }
+
+    /**
      * Gets the JWT payload.
      *
      * @return array
