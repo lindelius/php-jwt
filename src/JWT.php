@@ -135,11 +135,7 @@ class JWT implements Iterator
      */
     public function __get($claimName)
     {
-        if (isset($this->payload[$claimName])) {
-            return $this->payload[$claimName];
-        }
-
-        return null;
+        return $this->getClaim($claimName);
     }
 
     /**
@@ -336,6 +332,21 @@ class JWT implements Iterator
         }
 
         return static::$allowedAlgorithms;
+    }
+
+    /**
+     * Gets the current value of a given claim.
+     *
+     * @param string $name
+     * @return mixed|null
+     */
+    public function getClaim($name)
+    {
+        if (isset($this->payload[$name])) {
+            return $this->payload[$name];
+        }
+
+        return null;
     }
 
     /**
