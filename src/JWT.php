@@ -120,7 +120,9 @@ class JWT implements Iterator
         }
 
         $this->algorithm = $algorithm;
-        $this->header    = array_merge([
+
+        unset($header['alg']);
+        $this->header = array_merge([
             'typ' => 'JWT',
             'alg' => $algorithm
         ], $header);
@@ -167,6 +169,28 @@ class JWT implements Iterator
     }
 
     /**
+     * Creates a new instance of the model.
+     *
+     * @param string|resource $key
+     * @param array           $header
+     * @param array           $payload
+     * @return static
+     * @throws DomainException
+     * @throws InvalidException
+     */
+    public static function create($key, array $header = [], array $payload = [])
+    {
+        $algorithm = isset($header['alg']) ?: null;
+        $jwt       = new static($key, $algorithm, $header);
+
+        foreach ($payload as $claimName => $claimValue) {
+            $jwt->{$claimName} = $claimValue;
+        }
+
+        return $jwt;
+    }
+
+    /**
      * Gets the value of the "current" claim in the payload array.
      *
      * @return mixed
@@ -181,16 +205,13 @@ class JWT implements Iterator
      *
      * @param string          $jwt
      * @param string|resource $key
+     * @param bool            $verify
      * @return static
-     * @throws BeforeValidException
      * @throws DomainException
-     * @throws ExpiredException
      * @throws InvalidArgumentException
      * @throws InvalidException
-     * @throws InvalidSignatureException
-     * @throws RuntimeException
      */
-    public static function decode($jwt, $key)
+    public static function decode($jwt, $key, $verify = true)
     {
         if (empty($jwt) || !is_string($jwt)) {
             throw new InvalidArgumentException('Invalid JWT.');
@@ -202,13 +223,8 @@ class JWT implements Iterator
             throw new InvalidException('Unexpected number of JWT segments.');
         }
 
-        /**
-         * Decode the JWT.
-         */
-        $dataToSign = sprintf('%s.%s', $segments[0], $segments[1]);
-        $header     = static::jsonDecode(url_safe_base64_decode($segments[0]));
-        $payload    = static::jsonDecode(url_safe_base64_decode($segments[1]));
-        $signature  = url_safe_base64_decode($segments[2]);
+        $header  = static::jsonDecode(url_safe_base64_decode($segments[0]));
+        $payload = static::jsonDecode(url_safe_base64_decode($segments[1]));
 
         if (empty($header)) {
             throw new InvalidException('Invalid JWT header.');
@@ -230,54 +246,13 @@ class JWT implements Iterator
             }
         }
 
-        if (empty($header['alg']) || !is_string($header['alg'])) {
-            throw new InvalidException('Invalid hashing algorithm.');
+        $jwt = static::create($key, $header, $payload);
+
+        if ($verify) {
+            $jwt->verify($segments[2]);
         }
 
-        if (empty(static::$supportedAlgorithms[$header['alg']]) || !in_array($header['alg'], static::getAllowedAlgorithms())) {
-            throw new DomainException('Unsupported hashing algorithm.');
-        }
-
-        /**
-         * Verify the JWT signature.
-         */
-        $functionName      = static::$supportedAlgorithms[$header['alg']][0];
-        $functionAlgorithm = static::$supportedAlgorithms[$header['alg']][1];
-        $verified          = false;
-
-        if ($functionName === 'hash_hmac') {
-            $hash     = hash_hmac($functionAlgorithm, $dataToSign, $key, true);
-            $verified = hash_equals($signature, $hash);
-        } elseif ($functionName === 'openssl') {
-            $success = openssl_verify($dataToSign, $signature, $key, $functionAlgorithm);
-
-            if ($success === 1) {
-                $verified = true;
-            }
-        }
-
-        if (!$verified) {
-            throw new InvalidSignatureException('Invalid JWT signature.');
-        }
-
-        /**
-         * Verify any time restriction that may have been set for the JWT.
-         */
-        $timestamp = time();
-
-        if (isset($payload['nbf']) && is_numeric($payload['nbf']) && (float) $payload['nbf'] > ($timestamp + static::$leeway)) {
-            throw new BeforeValidException('The JWT is not yet valid.');
-        }
-
-        if (isset($payload['iat']) && is_numeric($payload['iat']) && (float) $payload['iat'] > ($timestamp + static::$leeway)) {
-            throw new BeforeValidException('The JWT is not yet valid.');
-        }
-
-        if (isset($payload['exp']) && is_numeric($payload['exp']) && (float) $payload['exp'] <= ($timestamp - static::$leeway)) {
-            throw new ExpiredException('The JWT has expired.');
-        }
-
-        return static::create($key, $header, $payload);
+        return $jwt;
     }
 
     /**
@@ -455,35 +430,6 @@ class JWT implements Iterator
     }
 
     /**
-     * Gets a new instance of the model.
-     *
-     * @param string|resource $key
-     * @param array           $header
-     * @param array           $payload
-     * @return static
-     * @throws DomainException
-     * @throws InvalidException
-     */
-    public static function create($key, array $header = [], array $payload = [])
-    {
-        if (empty($header['alg']) || !is_string($header['alg'])) {
-            throw new InvalidException('Invalid hashing algorithm.');
-        }
-
-        if (empty(static::$supportedAlgorithms[$header['alg']]) || !in_array($header['alg'], static::getAllowedAlgorithms())) {
-            throw new DomainException('Unsupported hashing algorithm.');
-        }
-
-        $jwt = new static($key, $header['alg'], $header);
-
-        foreach ($payload as $claimName => $claimValue) {
-            $jwt->{$claimName} = $claimValue;
-        }
-
-        return $jwt;
-    }
-
-    /**
      * Advances the iterator to the "next" claim in the payload array.
      */
     public function next()
@@ -509,5 +455,58 @@ class JWT implements Iterator
         $key = key($this->payload);
 
         return $key !== null && $key !== false;
+    }
+
+    /**
+     * Verifies that the JWT is correctly formatted and that a given signature
+     * is valid.
+     *
+     * @param string $rawSignature
+     * @return bool
+     * @throws BeforeValidException
+     * @throws ExpiredException
+     * @throws InvalidSignatureException
+     */
+    public function verify($rawSignature)
+    {
+        $dataToSign        = sprintf('%s.%s', $this->getHeader(), $this->getPayload());
+        $functionName      = static::$supportedAlgorithms[$this->algorithm][0];
+        $functionAlgorithm = static::$supportedAlgorithms[$this->algorithm][1];
+        $signature         = url_safe_base64_decode($rawSignature);
+        $verified          = false;
+
+        if ($functionName === 'hash_hmac') {
+            $hash     = hash_hmac($functionAlgorithm, $dataToSign, $this->key, true);
+            $verified = hash_equals($signature, $hash);
+        } elseif ($functionName === 'openssl') {
+            $success = openssl_verify($dataToSign, $signature, $this->key, $functionAlgorithm);
+
+            if ($success === 1) {
+                $verified = true;
+            }
+        }
+
+        if (!$verified) {
+            throw new InvalidSignatureException('Invalid JWT signature.');
+        }
+
+        /**
+         * Verify any time restriction that may have been set for the JWT.
+         */
+        $timestamp = time();
+
+        if (isset($this->nbf) && is_numeric($this->nbf) && (float) $this->nbf > ($timestamp + static::$leeway)) {
+            throw new BeforeValidException('The JWT is not yet valid.');
+        }
+
+        if (isset($this->iat) && is_numeric($this->iat) && (float) $this->iat > ($timestamp + static::$leeway)) {
+            throw new BeforeValidException('The JWT is not yet valid.');
+        }
+
+        if (isset($this->exp) && is_numeric($this->exp) && (float) $this->exp <= ($timestamp - static::$leeway)) {
+            throw new ExpiredException('The JWT has expired.');
+        }
+
+        return true;
     }
 }
