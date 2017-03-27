@@ -277,7 +277,7 @@ class JWT implements Iterator
             throw new ExpiredException('The JWT has expired.');
         }
 
-        return static::newInstance($key, $header, $payload);
+        return static::create($key, $header, $payload);
     }
 
     /**
@@ -464,7 +464,7 @@ class JWT implements Iterator
      * @throws DomainException
      * @throws InvalidException
      */
-    public static function newInstance($key, array $header = [], array $payload = [])
+    public static function create($key, array $header = [], array $payload = [])
     {
         if (empty($header['alg']) || !is_string($header['alg'])) {
             throw new InvalidException('Invalid hashing algorithm.');
