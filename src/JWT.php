@@ -180,7 +180,7 @@ class JWT implements Iterator
      */
     public static function create($key, array $header = [], array $payload = [])
     {
-        $algorithm = isset($header['alg']) ?: null;
+        $algorithm = isset($header['alg']) ? $header['alg'] : null;
         $jwt       = new static($key, $algorithm, $header);
 
         foreach ($payload as $claimName => $claimValue) {
