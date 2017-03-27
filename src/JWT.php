@@ -253,8 +253,6 @@ class JWT implements Iterator
 
             if ($success === 1) {
                 $verified = true;
-            } elseif ($success === -1) {
-                throw new RuntimeException('OpenSSL failed to verify the signature.');
             }
         }
 
