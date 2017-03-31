@@ -469,7 +469,12 @@ class JWT implements Iterator
      */
     public function verify($rawSignature)
     {
-        $dataToSign        = sprintf('%s.%s', $this->getHeader(), $this->getPayload());
+        $dataToSign = sprintf(
+            '%s.%s',
+            url_safe_base64_encode(static::jsonEncode($this->getHeader())),
+            url_safe_base64_encode(static::jsonEncode($this->getPayload()))
+        );
+
         $functionName      = static::$supportedAlgorithms[$this->algorithm][0];
         $functionAlgorithm = static::$supportedAlgorithms[$this->algorithm][1];
         $signature         = url_safe_base64_decode($rawSignature);
