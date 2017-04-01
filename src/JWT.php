@@ -504,20 +504,17 @@ class JWT implements Iterator
             throw new InvalidSignatureException('Invalid JWT signature.');
         }
 
-        /**
-         * Verify any time restriction that may have been set for the JWT.
-         */
-        $timestamp = time();
+        $now = time();
 
-        if (isset($this->nbf) && is_numeric($this->nbf) && (float) $this->nbf > ($timestamp + static::$leeway)) {
+        if (isset($this->nbf) && is_numeric($this->nbf) && (float) $this->nbf > ($now + static::$leeway)) {
             throw new BeforeValidException('The JWT is not yet valid.');
         }
 
-        if (isset($this->iat) && is_numeric($this->iat) && (float) $this->iat > ($timestamp + static::$leeway)) {
+        if (isset($this->iat) && is_numeric($this->iat) && (float) $this->iat > ($now + static::$leeway)) {
             throw new BeforeValidException('The JWT is not yet valid.');
         }
 
-        if (isset($this->exp) && is_numeric($this->exp) && (float) $this->exp <= ($timestamp - static::$leeway)) {
+        if (isset($this->exp) && is_numeric($this->exp) && (float) $this->exp <= ($now - static::$leeway)) {
             throw new ExpiredException('The JWT has expired.');
         }
 
