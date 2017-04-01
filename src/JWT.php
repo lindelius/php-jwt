@@ -17,7 +17,7 @@ use Lindelius\JWT\Exception\RuntimeException;
  * Class JWT
  *
  * @author  Tom Lindelius <tom.lindelius@gmail.com>
- * @version 2017-02-25
+ * @version 2017-04-01
  */
 class JWT implements Iterator
 {
@@ -131,9 +131,9 @@ class JWT implements Iterator
     /**
      * Gets the current value for a given claim.
      *
-     * @param  string $claimName
+     * @param string $claimName
      * @return mixed
-     * @see    http://php.net/manual/en/language.oop5.overloading.php#object.get
+     * @see http://php.net/manual/en/language.oop5.overloading.php#object.get
      */
     public function __get($claimName)
     {
@@ -145,15 +145,15 @@ class JWT implements Iterator
      *
      * @param string $claimName
      * @param mixed  $newValue
-     * @see   http://php.net/manual/en/language.oop5.overloading.php#object.set
+     * @see http://php.net/manual/en/language.oop5.overloading.php#object.set
      */
     public function __set($claimName, $newValue)
     {
         $this->payload[$claimName] = $newValue;
 
         /**
-         * If the JWT has been previously encoded, clear the hash since it is
-         * no longer valid.
+         * If the JWT has been previously encoded, clear the generated hash
+         * since it's no longer valid.
          */
         $this->hash = null;
     }
@@ -194,6 +194,7 @@ class JWT implements Iterator
      * Gets the value of the "current" claim in the payload array.
      *
      * @return mixed
+     * @see http://php.net/manual/en/iterator.current.php
      */
     public function current()
     {
@@ -386,12 +387,13 @@ class JWT implements Iterator
      */
     protected function jsonEncode($data)
     {
-        $json = json_encode($data);
+        $json  = json_encode($data);
+        $error = json_last_error();
 
-        if (json_last_error() !== JSON_ERROR_NONE) {
+        if ($error !== JSON_ERROR_NONE) {
             throw new JsonException(sprintf(
                 'Unable to encode the given data (%s).',
-                json_last_error()
+                $error
             ));
         }
 
@@ -407,12 +409,13 @@ class JWT implements Iterator
      */
     protected function jsonDecode($json)
     {
-        $data = json_decode($json, true);
+        $data  = json_decode($json, true);
+        $error = json_last_error();
 
-        if (json_last_error() !== JSON_ERROR_NONE) {
+        if ($error !== JSON_ERROR_NONE) {
             throw new JsonException(sprintf(
                 'Unable to decode the given JSON string (%s).',
-                json_last_error()
+                $error
             ));
         }
 
@@ -423,6 +426,7 @@ class JWT implements Iterator
      * Gets the name of the "current" claim in the payload array.
      *
      * @return string
+     * @see http://php.net/manual/en/iterator.key.php
      */
     public function key()
     {
@@ -431,6 +435,8 @@ class JWT implements Iterator
 
     /**
      * Advances the iterator to the "next" claim in the payload array.
+     *
+     * @see http://php.net/manual/en/iterator.next.php
      */
     public function next()
     {
@@ -439,6 +445,8 @@ class JWT implements Iterator
 
     /**
      * Rewinds the payload iterator.
+     *
+     * @see http://php.net/manual/en/iterator.rewind.php
      */
     public function rewind()
     {
@@ -449,6 +457,7 @@ class JWT implements Iterator
      * Checks whether the current position in the payload array is valid.
      *
      * @return bool
+     * @see http://php.net/manual/en/iterator.valid.php
      */
     public function valid()
     {
