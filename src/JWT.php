@@ -235,16 +235,16 @@ class JWT implements Iterator
             throw new InvalidException('Invalid JWT payload.');
         }
 
-        if (empty($key) || (!is_string($key) && !is_resource($key))) {
-            throw new InvalidArgumentException('Invalid key.');
-        }
-
         if (is_array($key) || $key instanceof ArrayAccess) {
             if (isset($header['kid']) && isset($key[$header['kid']])) {
                 $key = $key[$header['kid']];
             } else {
                 throw new InvalidException('Invalid "kid" value. Unable to lookup secret key.');
             }
+        }
+
+        if (empty($key) || (!is_string($key) && !is_resource($key))) {
+            throw new InvalidArgumentException('Invalid key.');
         }
 
         $jwt = static::create($key, $header, $payload);
