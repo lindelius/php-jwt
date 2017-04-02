@@ -176,7 +176,7 @@ class JWT implements Iterator
      * @param array           $payload
      * @return static
      * @throws DomainException
-     * @throws InvalidException
+     * @throws InvalidArgumentException
      */
     public static function create($key, array $header = [], array $payload = [])
     {
@@ -211,6 +211,7 @@ class JWT implements Iterator
      * @throws DomainException
      * @throws InvalidArgumentException
      * @throws InvalidException
+     * @throws JsonException
      */
     public static function decode($jwt, $key, $verify = true)
     {
@@ -475,6 +476,7 @@ class JWT implements Iterator
      * @throws BeforeValidException
      * @throws ExpiredException
      * @throws InvalidSignatureException
+     * @throws JsonException
      */
     public function verify($rawSignature)
     {
