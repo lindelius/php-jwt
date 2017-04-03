@@ -149,13 +149,7 @@ class JWT implements Iterator
      */
     public function __set($claimName, $newValue)
     {
-        $this->payload[$claimName] = $newValue;
-
-        /**
-         * If the JWT has been previously encoded, clear the generated hash
-         * since it's no longer valid.
-         */
-        $this->hash = null;
+        $this->setClaim($claimName, $newValue);
     }
 
     /**
@@ -452,6 +446,23 @@ class JWT implements Iterator
     public function rewind()
     {
         reset($this->payload);
+    }
+
+    /**
+     * Sets a new value for a given claim.
+     *
+     * @param string $name
+     * @param mixed  $value
+     */
+    public function setClaim($name, $value)
+    {
+        $this->payload[$name] = $value;
+
+        /**
+         * If the JWT has been previously encoded, clear the generated hash
+         * since it's no longer valid.
+         */
+        $this->hash = null;
     }
 
     /**
