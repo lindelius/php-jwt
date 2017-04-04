@@ -9,9 +9,275 @@ use PHPUnit\Framework\TestCase;
  * Class JWTTest
  *
  * @author  Tom Lindelius <tom.lindelius@gmail.com>
- * @version 2017-03-05
+ * @version 2017-04-04
  */
 class JWTTest extends TestCase
 {
+    /**
+     * @return array
+     */
+    public function invalidKeyProvider()
+    {
+        return [
+            [1],
+            [0.07],
+            [null],
+            [new \stdClass()],
+            [''],
+            [false]
+        ];
+    }
 
+    /**
+     * @return array
+     */
+    public function invalidHashProvider()
+    {
+        return [
+            [['an_array']],
+            [1],
+            [0.07],
+            [null],
+            [new \stdClass()],
+            [''],
+            [false],
+            [curl_init()]
+        ];
+    }
+
+    /**
+     * @return array
+     */
+    public function invalidAlgorithmProvider()
+    {
+        return [
+            [['an_array']],
+            [1],
+            [0.07],
+            [new \stdClass()],
+            [false],
+            [curl_init()]
+        ];
+    }
+
+    /**
+     * @expectedException \DomainException
+     * @expectedExceptionMessage Unsupported hashing algorithm.
+     */
+    public function testCreateWithUnsupportedAlgorithm()
+    {
+        new JWT('my_key', 'ABC123');
+    }
+
+    /**
+     * @expectedException \DomainException
+     * @expectedExceptionMessage Unsupported hashing algorithm.
+     */
+    public function testDecodeWithUnsupportedAlgorithm()
+    {
+        $jwt = 'eyJ0eXAiOiJKV1QiLCJhbGciOiJBQkMxMjMifQ.eyJzb21lX2ZpZWxkIjoiYW55X3ZhbHVlIn0.92nuM1zI5H8lARijnJS_NOEe1at9C38kxJxpgHc9D6Q';
+
+        JWT::decode($jwt, 'my_key');
+    }
+
+    /**
+     * @expectedException \DomainException
+     * @expectedExceptionMessage Unsupported hashing algorithm.
+     */
+    public function testCreateWithDisallowedAlgorithm()
+    {
+        new RestrictedAlgorithmsJWT('my_key', 'HS512');
+    }
+
+    /**
+     * @expectedException \DomainException
+     * @expectedExceptionMessage Unsupported hashing algorithm.
+     */
+    public function testDecodeWithDisallowedAlgorithm()
+    {
+        $jwt = 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzUxMiJ9.eyJzb21lX2ZpZWxkIjoiYW55X3ZhbHVlIn0.Up6KufPyr5SQVacgwVRfrcPRg1uav5cMsn2z41XxZ7s';
+
+        RestrictedAlgorithmsJWT::decode($jwt, 'my_key');
+    }
+
+    /**
+     * @expectedException \InvalidArgumentException
+     * @expectedExceptionMessage Invalid key.
+     * @dataProvider invalidKeyProvider
+     * @param mixed $key
+     */
+    public function testCreateWithInvalidKey($key)
+    {
+        new JWT($key);
+    }
+
+    /**
+     * @expectedException \InvalidArgumentException
+     * @expectedExceptionMessage Invalid key.
+     * @dataProvider invalidKeyProvider
+     * @param mixed $key
+     */
+    public function testDecodeWithInvalidKey($key)
+    {
+        $jwt = 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzb21lX2ZpZWxkIjoiYW55X3ZhbHVlIn0.yQz7d3ZjXJ508tZedOxG3aZPEUVltphXrGFz6lE6Jhk';
+
+        JWT::decode($jwt, $key);
+    }
+
+    /**
+     * @expectedException \InvalidArgumentException
+     * @expectedExceptionMessage Invalid hashing algorithm.
+     * @dataProvider invalidAlgorithmProvider
+     * @param mixed $algorithm
+     */
+    public function testCreateWithInvalidAlgorithm($algorithm)
+    {
+        new JWT('my_key', $algorithm);
+    }
+
+    /**
+     * @expectedException \InvalidArgumentException
+     * @expectedExceptionMessage Invalid hashing algorithm.
+     */
+    public function testDecodeWithInvalidAlgorithm()
+    {
+        $jwt = 'eyJ0eXAiOiJKV1QiLCJhbGciOjEzMzd9.eyJzb21lX2ZpZWxkIjoiYW55X3ZhbHVlIn0.q4UyVTIKIamLj8ZvlaQMO_yUblMXHwJ_k3qgeGzrnO0';
+
+        JWT::decode($jwt, 'my_key');
+    }
+
+    /**
+     * @expectedException \InvalidArgumentException
+     * @expectedExceptionMessage Invalid JWT.
+     * @dataProvider invalidHashProvider
+     * @param mixed $hash
+     */
+    public function testDecodeWithInvalidHash($hash)
+    {
+        JWT::decode($hash, 'my_key');
+    }
+
+    /**
+     * @expectedException \Lindelius\JWT\Exception\InvalidException
+     * @expectedExceptionMessage Unexpected number of JWT segments.
+     */
+    public function testDecodeMalformedJWT()
+    {
+        $jwt = 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzb21lX2ZpZWxkIjoiYW55X3ZhbHVlIn0';
+
+        JWT::decode($jwt, 'my_key');
+    }
+
+    /**
+     * @expectedException \Lindelius\JWT\Exception\InvalidException
+     * @expectedExceptionMessage Invalid "kid" value.
+     */
+    public function testDecodeWithInvalidKeyId()
+    {
+        $keys = ['correct_kid' => 'my_key'];
+
+        $jwt = new JWT('my_key', null, ['kid' => 'wrong_kid']);
+        $jwt->setClaim('some_field', 'any_value');
+
+        JWT::decode($jwt->encode(), $keys);
+    }
+
+    public function testFullLifeCycle()
+    {
+        $jwt = new JWT('my_key', 'HS256');
+        $jwt->setClaim('some_field', 'any_value');
+        $jwt->encode();
+
+        $decodedJwt = JWT::decode($jwt->getHash(), 'my_key', false);
+        $segments   = explode('.', $jwt->getHash());
+        $decodedJwt->verify($segments[2]);
+
+        $this->assertEquals('any_value', $decodedJwt->getClaim('some_field'));
+    }
+
+    public function testDecodeAndVerifyWithValidSignature()
+    {
+        $hash = 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzb21lX2ZpZWxkIjoiYW55X3ZhbHVlIn0.yQz7d3ZjXJ508tZedOxG3aZPEUVltphXrGFz6lE6Jhk';
+        $jwt  = JWT::decode($hash, 'my_key');
+
+        $this->assertEquals('any_value', $jwt->getClaim('some_field'));
+    }
+
+    /**
+     * @expectedException \Lindelius\JWT\Exception\InvalidSignatureException
+     */
+    public function testDecodeAndVerifyWithInvalidSignature()
+    {
+        $jwt = 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzb21lX2ZpZWxkIjoiYW55X3ZhbHVlIn0.JUKQhsQPFfq8fQMkOmJ2x_w3NrEhVZNcYg52vn-GREE';
+
+        JWT::decode($jwt, 'my_key');
+    }
+
+    public function testDecodeWithExpWithinLeewayTime()
+    {
+        $jwt = new LeewayJWT('my_key');
+        $jwt->setClaim('exp', time() - 30);
+
+        LeewayJWT::decode($jwt->encode(), 'my_key');
+    }
+
+    /**
+     * @expectedException \Lindelius\JWT\Exception\ExpiredException
+     */
+    public function testDecodeWithExpOutsideOfLeewayTime()
+    {
+        $jwt = new LeewayJWT('my_key');
+        $jwt->setClaim('exp', time() - 100);
+
+        LeewayJWT::decode($jwt->encode(), 'my_key');
+    }
+
+    public function testDecodeWithIatWithinLeewayTime()
+    {
+        $jwt = new LeewayJWT('my_key');
+        $jwt->setClaim('iat', time() + 30);
+
+        LeewayJWT::decode($jwt->encode(), 'my_key');
+    }
+
+    /**
+     * @expectedException \Lindelius\JWT\Exception\BeforeValidException
+     */
+    public function testDecodeWithIatOutsideOfLeewayTime()
+    {
+        $jwt = new LeewayJWT('my_key');
+        $jwt->setClaim('iat', time() + 100);
+
+        LeewayJWT::decode($jwt->encode(), 'my_key');
+    }
+
+    public function testDecodeWithNbfWithinLeewayTime()
+    {
+        $jwt = new LeewayJWT('my_key');
+        $jwt->setClaim('nbf', time() + 30);
+
+        LeewayJWT::decode($jwt->encode(), 'my_key');
+    }
+
+    /**
+     * @expectedException \Lindelius\JWT\Exception\BeforeValidException
+     */
+    public function testDecodeWithNbfOutsideOfLeewayTime()
+    {
+        $jwt = new LeewayJWT('my_key');
+        $jwt->setClaim('nbf', time() + 100);
+
+        LeewayJWT::decode($jwt->encode(), 'my_key');
+    }
+
+    /**
+     * @expectedException \Lindelius\JWT\Exception\JsonException
+     * @expectedExceptionMessage Unable to decode the given JSON string
+     */
+    public function testDecodeTokenWithInvalidJson()
+    {
+        $jwt = 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.U29tZXRoaW5nIG90aGVyIHRoYW4gSlNPTg.yQz7d3ZjXJ508tZedOxG3aZPEUVltphXrGFz6lE6Jhk';
+
+        JWT::decode($jwt, 'my_key');
+    }
 }
