@@ -141,6 +141,18 @@ class JWT implements Iterator
     }
 
     /**
+     * Checks whether a given claim has been set.
+     *
+     * @param string $claimName
+     * @return bool
+     * @see http://php.net/manual/en/language.oop5.overloading.php#object.isset
+     */
+    public function __isset($claimName)
+    {
+        return isset($this->payload[$claimName]);
+    }
+
+    /**
      * Sets a new value for a given claim.
      *
      * @param string $claimName
@@ -160,6 +172,17 @@ class JWT implements Iterator
     public function __toString()
     {
         return (string) $this->getHash();
+    }
+
+    /**
+     * Unsets a given claim.
+     *
+     * @param string $claimName
+     * @see http://php.net/manual/en/language.oop5.overloading.php#object.unset
+     */
+    public function __unset($claimName)
+    {
+        unset($this->payload[$claimName]);
     }
 
     /**
