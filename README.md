@@ -43,15 +43,15 @@ function login($username, $password)
 }
 ```
 
-After a JWT has been issued by your PHP application it should be included in all future requests (to secured endpoints) by the application making the requests. It's up to you to decide how the JWT should be included.
+After a JWT has been issued by your PHP application it should be included in all future requests (to secured endpoints) by the application making the requests. It is up to you to decide how the JWT should be included.
 
-For all secured endpoints you need to verify that a JWT is included and that it's valid. You can do so by using the included `JWT::decode()` method.
+For all secured endpoints you need to verify that a JWT is included and that it is valid. You can do so by using the included `JWT::decode()` method.
 
 ```php
 $decodedJwt = JWT::decode($jwt, PRIVATE_KEY);
 ```
 
-This will both decode and verify that the included JWT is actually valid. If you need to do this in two steps, first decode it and then check whether it is valid, you can do so by setting the method's `$verify` flag to `false`. Although, in this case you will have to extract the signature from the included JWT yourself and pass it to the `JWT::verify()` method.
+This will both decode and verify that the included JWT is valid. If you need to do this in two steps, first decode it and then check whether it is valid, you can do so by setting the method's `$verify` flag to `false`. Although, in this case you will have to extract the signature from the included JWT yourself and then pass it to the `JWT::verify()` method.
 
 ```php
 function verify($jwt)
@@ -82,9 +82,9 @@ function verify($jwt)
 ### Advanced Usage
 
 #### Algorithm Choices
-If you would like to limit the hashing algorithms that can be used for the JWTs, you can do so by extending the model and specifying these algorithms in the `JWT::$allowedAlgorithms` property. You can find all the hashing algorithms that this library supports in the `JWT::$supportedAlgorithms` property.
+If you would like to limit the hashing algorithms that can be used for the JWTs, you can do so by extending the model and specifying these algorithms in the `JWT::$allowedAlgorithms` property. You can find all the supported hashing algorithms in the `JWT::$supportedAlgorithms` property.
 
-If you're not going to allow the "HS256"-algorithm, or if you would just rather have a different default, you can do so by overriding the `JWT::$defaultAlgorithm` property.
+If you are not going to allow the "HS256"-algorithm, or if you would just rather have a different default, you should also override the `JWT::$defaultAlgorithm` property.
 
 ```php
 class MyJWT extends JWT
@@ -96,7 +96,7 @@ class MyJWT extends JWT
 ```
 
 #### Leeway Time
-If there are time differences between your application servers, you can extend the model and make use of the `JWT::$leeway` property to give your servers some extra seconds when verifying certain calims (`iat`, `nbf`, `exp`). The property's value should be a positive integer representing the number of extra seconds that your servers need.
+If there are time differences between your application servers, you can extend the model and make use of the `JWT::$leeway` property to give your servers some extra seconds when verifying certain claims (`iat`, `nbf`, and `exp`). The property's value should be a positive integer representing the number of extra seconds that your servers need.
 
 ```php
 class MyJWT extends JWT    
@@ -118,7 +118,7 @@ $keys = [
 $jwt = new JWT($keys['key_2'], null, ['kid' => 'key_2']);
 ```
 
-If you use this approach, all you have to do when you are verifying the JWT is to provide the `JWT::decode()` method with the `$keys` array and it will automatically look-up and use the correct key.
+If you use this approach, all you have to do when verifying the JWT is to provide the `JWT::decode()` method with the `$keys` array and it will automatically look-up and use the correct key.
 
 ```php
 $decodedJwt = JWT::decode($encodedJwt, $keys);
