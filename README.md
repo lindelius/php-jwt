@@ -10,7 +10,7 @@ This library is based on the [Firebase PHP-JWT library](https://github.com/fireb
 In order to install this library, issue the following command from your project's root folder:
 
 ```
-composer require "lindelius/php-jwt=^0.2"
+composer require "lindelius/php-jwt=^0.3"
 ```
 
 ## Usage
