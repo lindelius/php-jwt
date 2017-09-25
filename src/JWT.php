@@ -403,7 +403,7 @@ class JWT implements Iterator
      * @return string
      * @throws JsonException
      */
-    protected function jsonEncode($data)
+    protected static function jsonEncode($data)
     {
         $json  = json_encode($data);
         $error = json_last_error();
@@ -425,7 +425,7 @@ class JWT implements Iterator
      * @return mixed
      * @throws JsonException
      */
-    protected function jsonDecode($json)
+    protected static function jsonDecode($json)
     {
         $data  = json_decode($json, true);
         $error = json_last_error();
