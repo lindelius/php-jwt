@@ -244,16 +244,16 @@ class JWT implements Iterator
             throw new InvalidJwtException('Unexpected number of JWT segments.');
         }
 
-        if (false === ($base64Header = url_safe_base64_decode($segments[0]))) {
+        if (false === ($decodedHeader = url_safe_base64_decode($segments[0]))) {
             throw new InvalidJwtException('Invalid header encoding.');
         }
 
-        if (false === ($base64Payload = url_safe_base64_decode($segments[1]))) {
+        if (false === ($decodedPayload = url_safe_base64_decode($segments[1]))) {
             throw new InvalidJwtException('Invalid payload encoding.');
         }
 
-        $header  = static::jsonDecode($base64Header);
-        $payload = static::jsonDecode($base64Payload);
+        $header  = static::jsonDecode($decodedHeader);
+        $payload = static::jsonDecode($decodedPayload);
 
         if (empty($header)) {
             throw new InvalidJwtException('Invalid JWT header.');
