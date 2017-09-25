@@ -244,8 +244,16 @@ class JWT implements Iterator
             throw new InvalidJwtException('Unexpected number of JWT segments.');
         }
 
-        $header  = static::jsonDecode(url_safe_base64_decode($segments[0]));
-        $payload = static::jsonDecode(url_safe_base64_decode($segments[1]));
+        if (false === ($base64Header = url_safe_base64_decode($segments[0]))) {
+            throw new InvalidJwtException('Invalid header encoding.');
+        }
+
+        if (false === ($base64Payload = url_safe_base64_decode($segments[1]))) {
+            throw new InvalidJwtException('Invalid payload encoding.');
+        }
+
+        $header  = static::jsonDecode($base64Header);
+        $payload = static::jsonDecode($base64Payload);
 
         if (empty($header)) {
             throw new InvalidJwtException('Invalid JWT header.');
@@ -526,6 +534,10 @@ class JWT implements Iterator
         $functionAlgorithm = static::$supportedAlgorithms[$this->algorithm][1];
         $signature         = url_safe_base64_decode($rawSignature);
         $verified          = false;
+
+        if ($signature === false) {
+            throw new InvalidSignatureException('Invalid signature encoding.');
+        }
 
         if ($functionName === 'hash_hmac') {
             $hash     = hash_hmac($functionAlgorithm, $dataToSign, $this->key, true);
