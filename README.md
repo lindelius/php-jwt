@@ -28,7 +28,7 @@ function login($username, $password)
         MyJsonResponseClass::errorResponse('Invalid credentials.');
     }
     
-    $jwt = new JWT(PRIVATE_KEY);
+    $jwt = new JWT(ENCODE_KEY);
     
     /**
      * Add payload data (claims) to the JWT.
@@ -48,7 +48,7 @@ After a JWT has been issued by your PHP application it should be included in all
 For all secured endpoints you need to verify that a JWT is included and that it is valid. You can do so by using the included `JWT::decode()` method.
 
 ```php
-$decodedJwt = JWT::decode($jwt, PRIVATE_KEY);
+$decodedJwt = JWT::decode($jwt, DECODE_KEY);
 ```
 
 This will both decode and verify that the included JWT is valid. If you need to do this in two steps, first decode it and then check whether it is valid, you can do so by setting the method's `$verify` flag to `false`. Although, in this case you will have to extract the signature from the included JWT yourself and then pass it to the `JWT::verify()` method.
@@ -56,7 +56,10 @@ This will both decode and verify that the included JWT is valid. If you need to 
 ```php
 function verify($jwt)
 {
-    $decodedJwt = JWT::decode($jwt, PRIVATE_KEY, false);
+    /**
+     * Decode the JWT without immediately verifying it.
+     */
+    $decodedJwt = JWT::decode($jwt, DECODE_KEY, false);
     
     try {
         /**
