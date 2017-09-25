@@ -87,15 +87,15 @@ class JWT implements Iterator
         'HS256' => ['hash_hmac', 'SHA256'],
         'HS512' => ['hash_hmac', 'SHA512'],
         'HS384' => ['hash_hmac', 'SHA384'],
-        'RS256' => ['openssl', 'SHA256']
+        'RS256' => ['openssl', 'SHA256'],
     ];
 
     /**
      * Constructor for JWT objects.
      *
-     * @param string|resource $key
-     * @param string|null     $algorithm
-     * @param array           $header
+     * @param  string|resource $key
+     * @param  string|null     $algorithm
+     * @param  array           $header
      * @throws DomainException
      * @throws InvalidArgumentException
      */
@@ -124,16 +124,16 @@ class JWT implements Iterator
         unset($header['alg']);
         $this->header = array_merge([
             'typ' => 'JWT',
-            'alg' => $algorithm
+            'alg' => $algorithm,
         ], $header);
     }
 
     /**
      * Gets the current value for a given claim.
      *
-     * @param string $claimName
+     * @param  string $claimName
      * @return mixed
-     * @see http://php.net/manual/en/language.oop5.overloading.php#object.get
+     * @see    http://php.net/manual/en/language.oop5.overloading.php#object.get
      */
     public function __get($claimName)
     {
@@ -143,9 +143,9 @@ class JWT implements Iterator
     /**
      * Checks whether a given claim has been set.
      *
-     * @param string $claimName
+     * @param  string $claimName
      * @return bool
-     * @see http://php.net/manual/en/language.oop5.overloading.php#object.isset
+     * @see    http://php.net/manual/en/language.oop5.overloading.php#object.isset
      */
     public function __isset($claimName)
     {
@@ -157,7 +157,7 @@ class JWT implements Iterator
      *
      * @param string $claimName
      * @param mixed  $newValue
-     * @see http://php.net/manual/en/language.oop5.overloading.php#object.set
+     * @see   http://php.net/manual/en/language.oop5.overloading.php#object.set
      */
     public function __set($claimName, $newValue)
     {
@@ -178,7 +178,7 @@ class JWT implements Iterator
      * Unsets a given claim.
      *
      * @param string $claimName
-     * @see http://php.net/manual/en/language.oop5.overloading.php#object.unset
+     * @see   http://php.net/manual/en/language.oop5.overloading.php#object.unset
      */
     public function __unset($claimName)
     {
@@ -188,9 +188,9 @@ class JWT implements Iterator
     /**
      * Creates a new instance of the model.
      *
-     * @param string|resource $key
-     * @param array           $header
-     * @param array           $payload
+     * @param  string|resource $key
+     * @param  array           $header
+     * @param  array           $payload
      * @return static
      * @throws DomainException
      * @throws InvalidArgumentException
@@ -211,7 +211,7 @@ class JWT implements Iterator
      * Gets the value of the "current" claim in the payload array.
      *
      * @return mixed
-     * @see http://php.net/manual/en/iterator.current.php
+     * @see    http://php.net/manual/en/iterator.current.php
      */
     public function current()
     {
@@ -221,9 +221,9 @@ class JWT implements Iterator
     /**
      * Decodes a JWT hash and returns the resulting object.
      *
-     * @param string          $jwt
-     * @param string|resource $key
-     * @param bool            $verify
+     * @param  string          $jwt
+     * @param  string|resource $key
+     * @param  bool            $verify
      * @return static
      * @throws DomainException
      * @throws InvalidArgumentException
@@ -329,8 +329,8 @@ class JWT implements Iterator
     /**
      * Gets the current value of a given claim.
      *
-     * @param string $name
-     * @return mixed|null
+     * @param  string $name
+     * @return mixed
      */
     public function getClaim($name)
     {
@@ -374,8 +374,8 @@ class JWT implements Iterator
     /**
      * Gets the current value for a given header field.
      *
-     * @param string $name
-     * @return mixed|null
+     * @param  string $name
+     * @return mixed
      */
     public function getHeaderField($name)
     {
@@ -399,7 +399,7 @@ class JWT implements Iterator
     /**
      * Encodes the given data to a JSON string.
      *
-     * @param mixed $data
+     * @param  mixed $data
      * @return string
      * @throws JsonException
      */
@@ -421,7 +421,7 @@ class JWT implements Iterator
     /**
      * Decodes a given JSON string.
      *
-     * @param string $json
+     * @param  string $json
      * @return mixed
      * @throws JsonException
      */
@@ -444,7 +444,7 @@ class JWT implements Iterator
      * Gets the name of the "current" claim in the payload array.
      *
      * @return string
-     * @see http://php.net/manual/en/iterator.key.php
+     * @see    http://php.net/manual/en/iterator.key.php
      */
     public function key()
     {
@@ -492,7 +492,7 @@ class JWT implements Iterator
      * Checks whether the current position in the payload array is valid.
      *
      * @return bool
-     * @see http://php.net/manual/en/iterator.valid.php
+     * @see    http://php.net/manual/en/iterator.valid.php
      */
     public function valid()
     {
@@ -505,7 +505,7 @@ class JWT implements Iterator
      * Verifies that the JWT is correctly formatted and that a given signature
      * is valid.
      *
-     * @param string $rawSignature
+     * @param  string $rawSignature
      * @return bool
      * @throws BeforeValidException
      * @throws ExpiredJwtException

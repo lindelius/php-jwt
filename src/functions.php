@@ -4,7 +4,7 @@ if (!function_exists('url_safe_base64_encode')) {
     /**
      * Encodes given data using URL-safe Base64 encoding.
      *
-     * @param string $input
+     * @param  string $input
      * @return string
      */
     function url_safe_base64_encode($input)
@@ -17,7 +17,7 @@ if (!function_exists('url_safe_base64_decode')) {
     /**
      * Decodes data encoded with URL-safe Base64.
      *
-     * @param string $input
+     * @param  string $input
      * @return string
      */
     function url_safe_base64_decode($input)
@@ -26,6 +26,7 @@ if (!function_exists('url_safe_base64_decode')) {
 
         if ($remainder) {
             $paddingLength = 4 - $remainder;
+
             $input .= str_repeat('=', $paddingLength);
         }
 
