@@ -9,7 +9,7 @@ use PHPUnit\Framework\TestCase;
  * Class JWTTest
  *
  * @author  Tom Lindelius <tom.lindelius@gmail.com>
- * @version 2017-04-04
+ * @version 2017-09-25
  */
 class JWTTest extends TestCase
 {
@@ -182,13 +182,102 @@ class JWTTest extends TestCase
         JWT::decode($jwt->encode(), $keys);
     }
 
-    public function testFullLifeCycle()
+    public function testFullLifeCycleHS256()
     {
         $jwt = new JWT('my_key', 'HS256');
         $jwt->setClaim('some_field', 'any_value');
         $jwt->encode();
 
         $decodedJwt = JWT::decode($jwt->getHash(), 'my_key', false);
+        $segments   = explode('.', $jwt->getHash());
+        $decodedJwt->verify($segments[2]);
+
+        $this->assertEquals('any_value', $decodedJwt->getClaim('some_field'));
+    }
+
+    public function testFullLifeCycleHS384()
+    {
+        $jwt = new JWT('my_key', 'HS384');
+        $jwt->setClaim('some_field', 'any_value');
+        $jwt->encode();
+
+        $decodedJwt = JWT::decode($jwt->getHash(), 'my_key', false);
+        $segments   = explode('.', $jwt->getHash());
+        $decodedJwt->verify($segments[2]);
+
+        $this->assertEquals('any_value', $decodedJwt->getClaim('some_field'));
+    }
+
+    public function testFullLifeCycleHS512()
+    {
+        $jwt = new JWT('my_key', 'HS512');
+        $jwt->setClaim('some_field', 'any_value');
+        $jwt->encode();
+
+        $decodedJwt = JWT::decode($jwt->getHash(), 'my_key', false);
+        $segments   = explode('.', $jwt->getHash());
+        $decodedJwt->verify($segments[2]);
+
+        $this->assertEquals('any_value', $decodedJwt->getClaim('some_field'));
+    }
+
+    public function testFullLifeCycleRS256()
+    {
+        $privateKey = null;
+        $resource   = openssl_pkey_new();
+
+        openssl_pkey_export($resource, $privateKey);
+
+        $publicKey = openssl_pkey_get_details($resource);
+        $publicKey = $publicKey['key'];
+
+        $jwt = new JWT($privateKey, 'RS256');
+        $jwt->setClaim('some_field', 'any_value');
+        $jwt->encode();
+
+        $decodedJwt = JWT::decode($jwt->getHash(), $publicKey, false);
+        $segments   = explode('.', $jwt->getHash());
+        $decodedJwt->verify($segments[2]);
+
+        $this->assertEquals('any_value', $decodedJwt->getClaim('some_field'));
+    }
+
+    public function testFullLifeCycleRS384()
+    {
+        $privateKey = null;
+        $resource   = openssl_pkey_new();
+
+        openssl_pkey_export($resource, $privateKey);
+
+        $publicKey = openssl_pkey_get_details($resource);
+        $publicKey = $publicKey['key'];
+
+        $jwt = new JWT($privateKey, 'RS384');
+        $jwt->setClaim('some_field', 'any_value');
+        $jwt->encode();
+
+        $decodedJwt = JWT::decode($jwt->getHash(), $publicKey, false);
+        $segments   = explode('.', $jwt->getHash());
+        $decodedJwt->verify($segments[2]);
+
+        $this->assertEquals('any_value', $decodedJwt->getClaim('some_field'));
+    }
+
+    public function testFullLifeCycleRS512()
+    {
+        $privateKey = null;
+        $resource   = openssl_pkey_new();
+
+        openssl_pkey_export($resource, $privateKey);
+
+        $publicKey = openssl_pkey_get_details($resource);
+        $publicKey = $publicKey['key'];
+
+        $jwt = new JWT($privateKey, 'RS512');
+        $jwt->setClaim('some_field', 'any_value');
+        $jwt->encode();
+
+        $decodedJwt = JWT::decode($jwt->getHash(), $publicKey, false);
         $segments   = explode('.', $jwt->getHash());
         $decodedJwt->verify($segments[2]);
 
