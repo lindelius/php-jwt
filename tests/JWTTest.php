@@ -158,7 +158,7 @@ class JWTTest extends TestCase
     }
 
     /**
-     * @expectedException \Lindelius\JWT\Exception\InvalidException
+     * @expectedException \Lindelius\JWT\Exception\InvalidJwtException
      * @expectedExceptionMessage Unexpected number of JWT segments.
      */
     public function testDecodeMalformedJWT()
@@ -169,7 +169,7 @@ class JWTTest extends TestCase
     }
 
     /**
-     * @expectedException \Lindelius\JWT\Exception\InvalidException
+     * @expectedException \Lindelius\JWT\Exception\InvalidJwtException
      * @expectedExceptionMessage Invalid "kid" value.
      */
     public function testDecodeWithInvalidKeyId()
@@ -222,7 +222,7 @@ class JWTTest extends TestCase
     }
 
     /**
-     * @expectedException \Lindelius\JWT\Exception\ExpiredException
+     * @expectedException \Lindelius\JWT\Exception\ExpiredJwtException
      */
     public function testDecodeWithExpOutsideOfLeewayTime()
     {

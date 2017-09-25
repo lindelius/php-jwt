@@ -221,9 +221,9 @@ class JWT implements Iterator
     /**
      * Decodes a JWT hash and returns the resulting object.
      *
-     * @param  string          $jwt
-     * @param  string|resource $key
-     * @param  bool            $verify
+     * @param  string $jwt
+     * @param  mixed  $key
+     * @param  bool   $verify
      * @return static
      * @throws DomainException
      * @throws InvalidArgumentException
