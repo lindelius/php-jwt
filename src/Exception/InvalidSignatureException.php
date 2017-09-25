@@ -6,8 +6,8 @@ namespace Lindelius\JWT\Exception;
  * Class InvalidSignatureException
  *
  * @author  Tom Lindelius <tom.lindelius@gmail.com>
- * @version 2017-02-24
+ * @version 2017-09-25
  */
-class InvalidSignatureException extends InvalidException
+class InvalidSignatureException extends InvalidJwtException
 {
 }

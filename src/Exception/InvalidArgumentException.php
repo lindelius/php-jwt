@@ -3,11 +3,11 @@
 namespace Lindelius\JWT\Exception;
 
 /**
- * Class BeforeValidException
+ * Class InvalidArgumentException
  *
  * @author  Tom Lindelius <tom.lindelius@gmail.com>
  * @version 2017-09-25
  */
-class BeforeValidException extends InvalidJwtException
+class InvalidArgumentException extends \InvalidArgumentException
 {
 }

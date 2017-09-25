@@ -3,11 +3,11 @@
 namespace Lindelius\JWT\Exception;
 
 /**
- * Class ExpiredException
+ * Class DomainException
  *
  * @author  Tom Lindelius <tom.lindelius@gmail.com>
- * @version 2017-02-24
+ * @version 2017-09-25
  */
-class ExpiredException extends InvalidException
+class DomainException extends \DomainException
 {
 }

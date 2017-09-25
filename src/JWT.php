@@ -3,12 +3,12 @@
 namespace Lindelius\JWT;
 
 use ArrayAccess;
-use DomainException;
-use InvalidArgumentException;
 use Iterator;
 use Lindelius\JWT\Exception\BeforeValidException;
-use Lindelius\JWT\Exception\ExpiredException;
-use Lindelius\JWT\Exception\InvalidException;
+use Lindelius\JWT\Exception\DomainException;
+use Lindelius\JWT\Exception\ExpiredJwtException;
+use Lindelius\JWT\Exception\InvalidArgumentException;
+use Lindelius\JWT\Exception\InvalidJwtException;
 use Lindelius\JWT\Exception\InvalidSignatureException;
 use Lindelius\JWT\Exception\JsonException;
 use Lindelius\JWT\Exception\RuntimeException;
@@ -17,7 +17,7 @@ use Lindelius\JWT\Exception\RuntimeException;
  * Class JWT
  *
  * @author  Tom Lindelius <tom.lindelius@gmail.com>
- * @version 2017-04-01
+ * @version 2017-09-25
  */
 class JWT implements Iterator
 {
@@ -227,7 +227,7 @@ class JWT implements Iterator
      * @return static
      * @throws DomainException
      * @throws InvalidArgumentException
-     * @throws InvalidException
+     * @throws InvalidJwtException
      * @throws JsonException
      */
     public static function decode($jwt, $key, $verify = true)
@@ -239,25 +239,25 @@ class JWT implements Iterator
         $segments = explode('.', $jwt);
 
         if (count($segments) !== 3) {
-            throw new InvalidException('Unexpected number of JWT segments.');
+            throw new InvalidJwtException('Unexpected number of JWT segments.');
         }
 
         $header  = static::jsonDecode(url_safe_base64_decode($segments[0]));
         $payload = static::jsonDecode(url_safe_base64_decode($segments[1]));
 
         if (empty($header)) {
-            throw new InvalidException('Invalid JWT header.');
+            throw new InvalidJwtException('Invalid JWT header.');
         }
 
         if (empty($payload)) {
-            throw new InvalidException('Invalid JWT payload.');
+            throw new InvalidJwtException('Invalid JWT payload.');
         }
 
         if (is_array($key) || $key instanceof ArrayAccess) {
             if (isset($header['kid']) && isset($key[$header['kid']])) {
                 $key = $key[$header['kid']];
             } else {
-                throw new InvalidException('Invalid "kid" value. Unable to lookup secret key.');
+                throw new InvalidJwtException('Invalid "kid" value. Unable to lookup secret key.');
             }
         }
 
@@ -508,7 +508,7 @@ class JWT implements Iterator
      * @param string $rawSignature
      * @return bool
      * @throws BeforeValidException
-     * @throws ExpiredException
+     * @throws ExpiredJwtException
      * @throws InvalidSignatureException
      * @throws JsonException
      */
@@ -551,7 +551,7 @@ class JWT implements Iterator
         }
 
         if (isset($this->exp) && is_numeric($this->exp) && (float) $this->exp <= ($now - static::$leeway)) {
-            throw new ExpiredException('The JWT has expired.');
+            throw new ExpiredJwtException('The JWT has expired.');
         }
 
         return true;
