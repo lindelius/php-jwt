@@ -307,7 +307,10 @@ class JWTTest extends TestCase
         $jwt = new LeewayJWT('my_key');
         $jwt->setClaim('exp', time() - 30);
 
-        LeewayJWT::decode($jwt->encode(), 'my_key');
+        $this->assertInstanceOf(
+            LeewayJWT::class,
+            LeewayJWT::decode($jwt->encode(), 'my_key')
+        );
     }
 
     /**
@@ -326,7 +329,10 @@ class JWTTest extends TestCase
         $jwt = new LeewayJWT('my_key');
         $jwt->setClaim('iat', time() + 30);
 
-        LeewayJWT::decode($jwt->encode(), 'my_key');
+        $this->assertInstanceOf(
+            LeewayJWT::class,
+            LeewayJWT::decode($jwt->encode(), 'my_key')
+        );
     }
 
     /**
@@ -345,7 +351,10 @@ class JWTTest extends TestCase
         $jwt = new LeewayJWT('my_key');
         $jwt->setClaim('nbf', time() + 30);
 
-        LeewayJWT::decode($jwt->encode(), 'my_key');
+        $this->assertInstanceOf(
+            LeewayJWT::class,
+            LeewayJWT::decode($jwt->encode(), 'my_key')
+        );
     }
 
     /**
