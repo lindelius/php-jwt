@@ -559,15 +559,15 @@ class JWT implements Iterator
 
         $now = time();
 
-        if (isset($this->nbf) && is_numeric($this->nbf) && ($now + static::$leeway) < (float) $this->nbf) {
+        if (isset($this->nbf) && ($now + static::$leeway) < (float) $this->nbf) {
             throw new BeforeValidException('The JWT is not yet valid.');
         }
 
-        if (isset($this->iat) && is_numeric($this->iat) && ($now + static::$leeway) < (float) $this->iat) {
+        if (isset($this->iat) && ($now + static::$leeway) < (float) $this->iat) {
             throw new BeforeValidException('The JWT is not yet valid.');
         }
 
-        if (isset($this->exp) && is_numeric($this->exp) && ($now - static::$leeway) >= (float) $this->exp) {
+        if (isset($this->exp) && ($now - static::$leeway) >= (float) $this->exp) {
             throw new ExpiredJwtException('The JWT has expired.');
         }
 
