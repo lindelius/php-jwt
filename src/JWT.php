@@ -58,13 +58,6 @@ class JWT implements Iterator
     private $header = [];
 
     /**
-     * The secret key used when signing the JWT.
-     *
-     * @var string|resource
-     */
-    private $key;
-
-    /**
      * Leeway time (in seconds) to account for clock skew.
      *
      * @var int
@@ -77,6 +70,13 @@ class JWT implements Iterator
      * @var array
      */
     private $payload = [];
+
+    /**
+     * The JWT signature.
+     *
+     * @var string|null
+     */
+    private $signature = null;
 
     /**
      * Supported hashing algorithms.
@@ -95,19 +95,17 @@ class JWT implements Iterator
     /**
      * Constructor for JWT objects.
      *
-     * @param  string|resource $key
-     * @param  string|null     $algorithm
-     * @param  array           $header
+     * @param  string|null $algorithm
+     * @param  array       $header
+     * @param  string|null $signature
      * @throws DomainException
      * @throws InvalidArgumentException
      */
-    public function __construct($key, $algorithm = null, array $header = [])
+    public function __construct($algorithm = null, array $header = [], $signature = null)
     {
-        if (empty($key) || (!is_string($key) && !is_resource($key))) {
-            throw new InvalidArgumentException('Invalid key.');
+        if ($signature !== null && !is_string($signature)) {
+            throw new InvalidArgumentException('Invalid signature.');
         }
-
-        $this->key = $key;
 
         if ($algorithm !== null && !is_string($algorithm)) {
             throw new InvalidArgumentException('Invalid hashing algorithm.');
@@ -122,12 +120,16 @@ class JWT implements Iterator
         }
 
         $this->algorithm = $algorithm;
+        $this->signature = $signature;
 
         unset($header['alg']);
-        $this->header = array_merge([
-            'typ' => 'JWT',
-            'alg' => $algorithm,
-        ], $header);
+        $this->header = array_merge(
+            [
+                'typ' => 'JWT',
+                'alg' => $algorithm,
+            ],
+            $header
+        );
     }
 
     /**
@@ -190,17 +192,20 @@ class JWT implements Iterator
     /**
      * Creates a new instance of the model.
      *
-     * @param  string|resource $key
-     * @param  array           $header
-     * @param  array           $payload
+     * @param  array       $header
+     * @param  array       $payload
+     * @param  string|null $signature
      * @return static
      * @throws DomainException
      * @throws InvalidArgumentException
      */
-    public static function create($key, array $header = [], array $payload = [])
+    public static function create(array $header = [], array $payload = [], $signature = null)
     {
-        $algorithm = isset($header['alg']) ? $header['alg'] : null;
-        $jwt       = new static($key, $algorithm, $header);
+        $jwt = new static(
+            isset($header['alg']) ? $header['alg'] : null,
+            $header,
+            $signature
+        );
 
         foreach ($payload as $claimName => $claimValue) {
             $jwt->{$claimName} = $claimValue;
@@ -232,7 +237,7 @@ class JWT implements Iterator
      * @throws InvalidJwtException
      * @throws JsonException
      */
-    public static function decode($jwt, $key, $verify = true)
+    public static function decode($jwt, $key = null, $verify = false)
     {
         if (empty($jwt) || !is_string($jwt)) {
             throw new InvalidArgumentException('Invalid JWT.');
@@ -252,6 +257,10 @@ class JWT implements Iterator
             throw new InvalidJwtException('Invalid payload encoding.');
         }
 
+        if (false === ($decodedSignature = url_safe_base64_decode($segments[2]))) {
+            throw new InvalidJwtException('Invalid signature encoding.');
+        }
+
         $header  = static::jsonDecode($decodedHeader);
         $payload = static::jsonDecode($decodedPayload);
 
@@ -263,22 +272,10 @@ class JWT implements Iterator
             throw new InvalidJwtException('Invalid JWT payload.');
         }
 
-        if (is_array($key) || $key instanceof ArrayAccess) {
-            if (isset($header['kid']) && isset($key[$header['kid']])) {
-                $key = $key[$header['kid']];
-            } else {
-                throw new InvalidJwtException('Invalid "kid" value. Unable to lookup secret key.');
-            }
-        }
-
-        if (empty($key) || (!is_string($key) && !is_resource($key))) {
-            throw new InvalidArgumentException('Invalid key.');
-        }
-
-        $jwt = static::create($key, $header, $payload);
+        $jwt = static::create($header, $payload, $decodedSignature);
 
         if ($verify) {
-            $jwt->verify($segments[2]);
+            $jwt->verify($key);
         }
 
         return $jwt;
@@ -287,12 +284,17 @@ class JWT implements Iterator
     /**
      * Encodes the JWT object and returns the resulting hash.
      *
+     * @param  mixed $key
      * @return string
      * @throws JsonException
      * @throws RuntimeException
      */
-    public function encode()
+    public function encode($key)
     {
+        if (empty($key) || (!is_string($key) && !is_resource($key))) {
+            throw new InvalidArgumentException('Invalid key.');
+        }
+
         $segments   = [];
         $segments[] = url_safe_base64_encode(static::jsonEncode($this->header));
         $segments[] = url_safe_base64_encode(static::jsonEncode($this->payload));
@@ -303,19 +305,20 @@ class JWT implements Iterator
         $dataToSign = implode('.', $segments);
         $function   = static::$supportedAlgorithms[$this->algorithm][0];
         $algorithm  = static::$supportedAlgorithms[$this->algorithm][1];
-        $signature  = null;
+
+        $this->signature = null;
 
         if ($function === 'hash_hmac') {
-            $signature = hash_hmac($algorithm, $dataToSign, $this->key, true);
+            $this->signature = hash_hmac($algorithm, $dataToSign, $key, true);
         } elseif ($function === 'openssl') {
-            openssl_sign($dataToSign, $signature, $this->key, $algorithm);
+            openssl_sign($dataToSign, $this->signature, $key, $algorithm);
         }
 
-        if (empty($signature)) {
+        if (empty($this->signature)) {
             throw new RuntimeException('Unable to sign the JWT.');
         }
 
-        $segments[] = url_safe_base64_encode($signature);
+        $segments[] = url_safe_base64_encode($this->signature);
 
         $this->hash = implode('.', $segments);
 
@@ -515,15 +518,33 @@ class JWT implements Iterator
      * Verifies that the JWT is correctly formatted and that the given signature
      * is valid.
      *
-     * @param  string $rawSignature
+     * @param  mixed $key
      * @return bool
      * @throws BeforeValidException
      * @throws ExpiredJwtException
      * @throws InvalidSignatureException
      * @throws JsonException
      */
-    public function verify($rawSignature)
+    public function verify($key)
     {
+        if (is_array($key) || $key instanceof ArrayAccess) {
+            $kid = $this->getHeaderField('kid');
+
+            if ($kid !== null && isset($key[$kid])) {
+                $key = $key[$kid];
+            } else {
+                throw new InvalidJwtException('Invalid "kid" value. Unable to lookup secret key.');
+            }
+        }
+
+        if (empty($key) || (!is_string($key) && !is_resource($key))) {
+            throw new InvalidArgumentException('Invalid key.');
+        }
+
+        if (empty($this->signature)) {
+            throw new InvalidSignatureException('Invalid signature.');
+        }
+
         $dataToSign = sprintf(
             '%s.%s',
             url_safe_base64_encode(static::jsonEncode($this->getHeader())),
@@ -532,21 +553,16 @@ class JWT implements Iterator
 
         $algorithm = static::$supportedAlgorithms[$this->algorithm][1];
         $function  = static::$supportedAlgorithms[$this->algorithm][0];
-        $signature = url_safe_base64_decode($rawSignature);
         $verified  = false;
 
-        if ($signature === false) {
-            throw new InvalidSignatureException('Invalid signature encoding.');
-        }
-
         if ($function === 'hash_hmac') {
-            $hash = hash_hmac($algorithm, $dataToSign, $this->key, true);
+            $hash = hash_hmac($algorithm, $dataToSign, $key, true);
 
-            if (hash_equals($signature, $hash)) {
+            if (hash_equals($this->signature, $hash)) {
                 $verified = true;
             }
         } elseif ($function === 'openssl') {
-            $success = openssl_verify($dataToSign, $signature, $this->key, $algorithm);
+            $success = openssl_verify($dataToSign, $this->signature, $key, $algorithm);
 
             if ($success === 1) {
                 $verified = true;
