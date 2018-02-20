@@ -110,7 +110,13 @@ class JWTTest extends TestCase
     {
         $jwt = 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzb21lX2ZpZWxkIjoiYW55X3ZhbHVlIn0.yQz7d3ZjXJ508tZedOxG3aZPEUVltphXrGFz6lE6Jhk';
 
-        JWT::decode($jwt, $key);
+        /**
+         * Do the decoding and verifying in two steps since we want to test
+         * against `null` keys, too, and the JWT::decode() method does not
+         * automatically verify the JWT if the key is `null`.
+         */
+        $decodedJwt = JWT::decode($jwt);
+        $decodedJwt->verify($key);
     }
 
     /**
