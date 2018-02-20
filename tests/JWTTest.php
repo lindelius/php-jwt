@@ -9,7 +9,7 @@ use PHPUnit\Framework\TestCase;
  * Class JWTTest
  *
  * @author  Tom Lindelius <tom.lindelius@gmail.com>
- * @version 2017-09-25
+ * @version 2018-02-20
  */
 class JWTTest extends TestCase
 {
@@ -24,7 +24,7 @@ class JWTTest extends TestCase
             [null],
             [new \stdClass()],
             [''],
-            [false]
+            [false],
         ];
     }
 
@@ -41,7 +41,7 @@ class JWTTest extends TestCase
             [new \stdClass()],
             [''],
             [false],
-            [curl_init()]
+            [curl_init()],
         ];
     }
 
@@ -56,7 +56,7 @@ class JWTTest extends TestCase
             [0.07],
             [new \stdClass()],
             [false],
-            [curl_init()]
+            [curl_init()],
         ];
     }
 
@@ -77,7 +77,7 @@ class JWTTest extends TestCase
     {
         $jwt = 'eyJ0eXAiOiJKV1QiLCJhbGciOiJBQkMxMjMifQ.eyJzb21lX2ZpZWxkIjoiYW55X3ZhbHVlIn0.92nuM1zI5H8lARijnJS_NOEe1at9C38kxJxpgHc9D6Q';
 
-        JWT::decode($jwt, 'my_key', true);
+        JWT::decode($jwt, 'my_key');
     }
 
     /**
@@ -97,27 +97,27 @@ class JWTTest extends TestCase
     {
         $jwt = 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzUxMiJ9.eyJzb21lX2ZpZWxkIjoiYW55X3ZhbHVlIn0.Up6KufPyr5SQVacgwVRfrcPRg1uav5cMsn2z41XxZ7s';
 
-        RestrictedAlgorithmsJWT::decode($jwt, 'my_key', true);
+        RestrictedAlgorithmsJWT::decode($jwt, 'my_key');
     }
 
     /**
+     * @param mixed $key
      * @expectedException \InvalidArgumentException
      * @expectedExceptionMessage Invalid key.
-     * @dataProvider invalidKeyProvider
-     * @param mixed $key
+     * @dataProvider             invalidKeyProvider
      */
     public function testDecodeWithInvalidKey($key)
     {
         $jwt = 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzb21lX2ZpZWxkIjoiYW55X3ZhbHVlIn0.yQz7d3ZjXJ508tZedOxG3aZPEUVltphXrGFz6lE6Jhk';
 
-        JWT::decode($jwt, $key, true);
+        JWT::decode($jwt, $key);
     }
 
     /**
+     * @param mixed $key
      * @expectedException \InvalidArgumentException
      * @expectedExceptionMessage Invalid key.
-     * @dataProvider invalidKeyProvider
-     * @param mixed $key
+     * @dataProvider             invalidKeyProvider
      */
     public function testEncodeWithInvalidKey($key)
     {
@@ -127,10 +127,10 @@ class JWTTest extends TestCase
     }
 
     /**
+     * @param mixed $algorithm
      * @expectedException \InvalidArgumentException
      * @expectedExceptionMessage Invalid hashing algorithm.
-     * @dataProvider invalidAlgorithmProvider
-     * @param mixed $algorithm
+     * @dataProvider             invalidAlgorithmProvider
      */
     public function testCreateWithInvalidAlgorithm($algorithm)
     {
@@ -145,18 +145,18 @@ class JWTTest extends TestCase
     {
         $jwt = 'eyJ0eXAiOiJKV1QiLCJhbGciOjEzMzd9.eyJzb21lX2ZpZWxkIjoiYW55X3ZhbHVlIn0.q4UyVTIKIamLj8ZvlaQMO_yUblMXHwJ_k3qgeGzrnO0';
 
-        JWT::decode($jwt, 'my_key', true);
+        JWT::decode($jwt, 'my_key');
     }
 
     /**
+     * @param mixed $hash
      * @expectedException \InvalidArgumentException
      * @expectedExceptionMessage Invalid JWT.
-     * @dataProvider invalidHashProvider
-     * @param mixed $hash
+     * @dataProvider             invalidHashProvider
      */
     public function testDecodeWithInvalidHash($hash)
     {
-        JWT::decode($hash, 'my_key', true);
+        JWT::decode($hash, 'my_key');
     }
 
     /**
@@ -167,7 +167,7 @@ class JWTTest extends TestCase
     {
         $jwt = 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzb21lX2ZpZWxkIjoiYW55X3ZhbHVlIn0';
 
-        JWT::decode($jwt, 'my_key', true);
+        JWT::decode($jwt, 'my_key');
     }
 
     /**
@@ -181,7 +181,7 @@ class JWTTest extends TestCase
         $jwt = new JWT(null, ['kid' => 'wrong_kid']);
         $jwt->setClaim('some_field', 'any_value');
 
-        JWT::decode($jwt->encode('my_key'), $keys, true);
+        JWT::decode($jwt->encode('my_key'), $keys);
     }
 
     public function testFullLifeCycleHS256()
@@ -190,7 +190,7 @@ class JWTTest extends TestCase
         $jwt->setClaim('some_field', 'any_value');
         $jwt->encode('my_key');
 
-        $decodedJwt = JWT::decode($jwt->getHash(), 'my_key', false);
+        $decodedJwt = JWT::decode($jwt->getHash());
         $decodedJwt->verify('my_key');
 
         $this->assertEquals('any_value', $decodedJwt->getClaim('some_field'));
@@ -202,7 +202,7 @@ class JWTTest extends TestCase
         $jwt->setClaim('some_field', 'any_value');
         $jwt->encode('my_key');
 
-        $decodedJwt = JWT::decode($jwt->getHash(), 'my_key', false);
+        $decodedJwt = JWT::decode($jwt->getHash());
         $decodedJwt->verify('my_key');
 
         $this->assertEquals('any_value', $decodedJwt->getClaim('some_field'));
@@ -214,7 +214,7 @@ class JWTTest extends TestCase
         $jwt->setClaim('some_field', 'any_value');
         $jwt->encode('my_key');
 
-        $decodedJwt = JWT::decode($jwt->getHash(), 'my_key', false);
+        $decodedJwt = JWT::decode($jwt->getHash());
         $decodedJwt->verify('my_key');
 
         $this->assertEquals('any_value', $decodedJwt->getClaim('some_field'));
@@ -233,7 +233,7 @@ class JWTTest extends TestCase
         $jwt->setClaim('some_field', 'any_value');
         $jwt->encode($privateKey);
 
-        $decodedJwt = JWT::decode($jwt->getHash(), $publicKey, false);
+        $decodedJwt = JWT::decode($jwt->getHash());
         $decodedJwt->verify($publicKey);
 
         $this->assertEquals('any_value', $decodedJwt->getClaim('some_field'));
@@ -252,7 +252,7 @@ class JWTTest extends TestCase
         $jwt->setClaim('some_field', 'any_value');
         $jwt->encode($privateKey);
 
-        $decodedJwt = JWT::decode($jwt->getHash(), $publicKey, false);
+        $decodedJwt = JWT::decode($jwt->getHash());
         $decodedJwt->verify($publicKey);
 
         $this->assertEquals('any_value', $decodedJwt->getClaim('some_field'));
@@ -271,7 +271,7 @@ class JWTTest extends TestCase
         $jwt->setClaim('some_field', 'any_value');
         $jwt->encode($privateKey);
 
-        $decodedJwt = JWT::decode($jwt->getHash(), $publicKey, false);
+        $decodedJwt = JWT::decode($jwt->getHash());
         $decodedJwt->verify($publicKey);
 
         $this->assertEquals('any_value', $decodedJwt->getClaim('some_field'));
@@ -280,7 +280,7 @@ class JWTTest extends TestCase
     public function testDecodeAndVerifyWithValidSignature()
     {
         $hash = 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzb21lX2ZpZWxkIjoiYW55X3ZhbHVlIn0.yQz7d3ZjXJ508tZedOxG3aZPEUVltphXrGFz6lE6Jhk';
-        $jwt  = JWT::decode($hash, 'my_key', true);
+        $jwt  = JWT::decode($hash, 'my_key');
 
         $this->assertEquals('any_value', $jwt->getClaim('some_field'));
     }
@@ -292,7 +292,7 @@ class JWTTest extends TestCase
     {
         $jwt = 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzb21lX2ZpZWxkIjoiYW55X3ZhbHVlIn0.JUKQhsQPFfq8fQMkOmJ2x_w3NrEhVZNcYg52vn-GREE';
 
-        JWT::decode($jwt, 'my_key', true);
+        JWT::decode($jwt, 'my_key');
     }
 
     public function testDecodeWithExpWithinLeewayTime()
@@ -302,7 +302,7 @@ class JWTTest extends TestCase
 
         $this->assertInstanceOf(
             LeewayJWT::class,
-            LeewayJWT::decode($jwt->encode('my_key'), 'my_key', true)
+            LeewayJWT::decode($jwt->encode('my_key'), 'my_key')
         );
     }
 
@@ -314,7 +314,7 @@ class JWTTest extends TestCase
         $jwt = new LeewayJWT();
         $jwt->setClaim('exp', time() - 100);
 
-        LeewayJWT::decode($jwt->encode('my_key'), 'my_key', true);
+        LeewayJWT::decode($jwt->encode('my_key'), 'my_key');
     }
 
     public function testDecodeWithIatWithinLeewayTime()
@@ -324,7 +324,7 @@ class JWTTest extends TestCase
 
         $this->assertInstanceOf(
             LeewayJWT::class,
-            LeewayJWT::decode($jwt->encode('my_key'), 'my_key', true)
+            LeewayJWT::decode($jwt->encode('my_key'), 'my_key')
         );
     }
 
@@ -336,7 +336,7 @@ class JWTTest extends TestCase
         $jwt = new LeewayJWT();
         $jwt->setClaim('iat', time() + 100);
 
-        LeewayJWT::decode($jwt->encode('my_key'), 'my_key', true);
+        LeewayJWT::decode($jwt->encode('my_key'), 'my_key');
     }
 
     public function testDecodeWithNbfWithinLeewayTime()
@@ -346,7 +346,7 @@ class JWTTest extends TestCase
 
         $this->assertInstanceOf(
             LeewayJWT::class,
-            LeewayJWT::decode($jwt->encode('my_key'), 'my_key', true)
+            LeewayJWT::decode($jwt->encode('my_key'), 'my_key')
         );
     }
 
@@ -358,7 +358,7 @@ class JWTTest extends TestCase
         $jwt = new LeewayJWT();
         $jwt->setClaim('nbf', time() + 100);
 
-        LeewayJWT::decode($jwt->encode('my_key'), 'my_key', true);
+        LeewayJWT::decode($jwt->encode('my_key'), 'my_key');
     }
 
     /**
@@ -369,6 +369,6 @@ class JWTTest extends TestCase
     {
         $jwt = 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.U29tZXRoaW5nIG90aGVyIHRoYW4gSlNPTg.yQz7d3ZjXJ508tZedOxG3aZPEUVltphXrGFz6lE6Jhk';
 
-        JWT::decode($jwt, 'my_key', true);
+        JWT::decode($jwt, 'my_key');
     }
 }

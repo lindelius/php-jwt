@@ -230,14 +230,13 @@ class JWT implements Iterator
      *
      * @param  string $jwt
      * @param  mixed  $key
-     * @param  bool   $verify
      * @return static
      * @throws DomainException
      * @throws InvalidArgumentException
      * @throws InvalidJwtException
      * @throws JsonException
      */
-    public static function decode($jwt, $key = null, $verify = false)
+    public static function decode($jwt, $key = null)
     {
         if (empty($jwt) || !is_string($jwt)) {
             throw new InvalidArgumentException('Invalid JWT.');
@@ -274,7 +273,7 @@ class JWT implements Iterator
 
         $jwt = static::create($header, $payload, $decodedSignature);
 
-        if ($verify) {
+        if ($key !== null) {
             $jwt->verify($key);
         }
 
