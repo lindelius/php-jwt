@@ -116,10 +116,10 @@ class JWT implements Iterator
         }
 
         if (!in_array($algorithm, static::getAllowedAlgorithms())) {
-            throw new DomainException('Disallowed hashing algorithm.');
+            throw new DomainException('Unsupported hashing algorithm.');
         }
 
-        if (empty(static::getSupportedAlgorithms()[$algorithm])) {
+        if (!in_array($algorithm, static::getSupportedAlgorithms())) {
             throw new DomainException('Unsupported hashing algorithm.');
         }
 
