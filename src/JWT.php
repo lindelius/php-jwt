@@ -229,14 +229,13 @@ class JWT implements Iterator
      * Decodes a JWT hash and returns the resulting object.
      *
      * @param  string $jwt
-     * @param  mixed  $key
      * @return static
      * @throws DomainException
      * @throws InvalidArgumentException
      * @throws InvalidJwtException
      * @throws JsonException
      */
-    public static function decode($jwt, $key = null)
+    public static function decode($jwt)
     {
         if (empty($jwt) || !is_string($jwt)) {
             throw new InvalidArgumentException('Invalid JWT.');
@@ -248,6 +247,9 @@ class JWT implements Iterator
             throw new InvalidJwtException('Unexpected number of JWT segments.');
         }
 
+        /**
+         * If the format looks good, attempt to decode its individual segments.
+         */
         if (false === ($decodedHeader = url_safe_base64_decode($segments[0]))) {
             throw new InvalidJwtException('Invalid header encoding.');
         }
@@ -271,13 +273,11 @@ class JWT implements Iterator
             throw new InvalidJwtException('Invalid JWT payload.');
         }
 
-        $jwt = static::create($header, $payload, $decodedSignature);
-
-        if ($key !== null) {
-            $jwt->verify($key);
-        }
-
-        return $jwt;
+        /**
+         * If the entire JWT was successfully decoded, create and return a new
+         * JWT instance populated with the decoded data.
+         */
+        return static::create($header, $payload, $decodedSignature);
     }
 
     /**
