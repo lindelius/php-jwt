@@ -17,26 +17,13 @@ composer require "lindelius/php-jwt=^0.5"
 The following is a very basic example of how to issue JWTs with this library:
 
 ```php
-function login($username, $password)
-{
-    $user = MyAuthenticationClass::login($username, $password);
-        
-    if (empty($user)) {
-        // TODO: return an "Invalid credentials" response
-    }
-    
-    $jwt = new \Lindelius\JWT\JWT();
-    
-    $jwt->exp      = time() + (60 * 60 * 2); // expire after 2 hours
-    $jwt->iat      = time();
-    $jwt->sub      = $user->id;
-    $jwt->username = $user->username;
-    $jwt->admin    = $user->admin;
-    
-    $token = $jwt->encode(ENCODE_KEY);
-    
-    // TODO: return the token in a response
-}
+$jwt = new \Lindelius\JWT\JWT();
+
+$jwt->exp = time() + (60 * 60 * 2); // expire after 2 hours
+$jwt->iat = time();
+$jwt->sub = $user->id;
+
+$accessToken = $jwt->encode(ENCODE_KEY);
 ```
 
 After a JWT has been issued by your PHP application it should be included in all future requests (to secured endpoints) by the application making the requests. It is up to you to decide how the JWT should be included, but it is usually done via the "Authorization" header.
@@ -94,7 +81,9 @@ $keys = [
     'key_3' => 'RfxRP43BIKoSQ7P1GfeO',
 ];
 
-$jwt = new \Lindelius\JWT\JWT(null, ['kid' => 'key_2']);
+$jwt = new \Lindelius\JWT\JWT('HS256', ['kid' => 'key_2']);
+
+$encodedJwt = $jwt->encode($keys['key_2']);
 ```
 
 If you use this approach, all you have to do when verifying the JWT is to provide the `JWT::verify()` method with the `$keys` array and it will automatically look-up and use the correct key.
