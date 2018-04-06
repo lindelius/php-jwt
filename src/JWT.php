@@ -410,6 +410,16 @@ class JWT implements Iterator
     }
 
     /**
+     * Gets the leeway time (in seconds).
+     *
+     * @return int
+     */
+    public static function getLeewayTime()
+    {
+        return static::$leeway;
+    }
+
+    /**
      * Gets the entire JWT payload.
      *
      * @return array
