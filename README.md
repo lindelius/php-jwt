@@ -10,7 +10,7 @@ This library is based on the [Firebase PHP-JWT library](https://github.com/fireb
 In order to install this library, issue the following command from your project's root folder:
 
 ```
-composer require "lindelius/php-jwt=^0.4"
+composer require "lindelius/php-jwt=^0.5"
 ```
 
 ## Usage
@@ -45,18 +45,13 @@ After a JWT has been issued by your PHP application it should be included in all
 Authorization: Bearer My.Jwt.Token
 ```
 
-For all secured endpoints you need to verify that a JWT is included and that it is valid. You can do so by using the included `JWT::decode()` method.
-
-```php
-$decodedJwt = \Lindelius\JWT\JWT::decode($jwt, DECODE_KEY);
-```
-
-The example above will both decode and verify that the JWT is valid. If you want to do this in two steps, i.e. first decode the JWT and then check whether it is valid, you can do so by **not** passing the key to the `JWT::decode()` method and instead make a call to the `JWT::verify()` method.
+For all secured endpoints you need to verify that a JWT is included and that it is valid. You can do so by using the included `JWT::decode()` and `JWT::verify()` methods.
 
 ```php
 $decodedJwt = \Lindelius\JWT\JWT::decode($jwt);
 
-// TODO: something that requires the JWT payload
+// You can access the JWT's payload before you verify it
+$userId = $decodedJwt->sub;
 
 $decodedJwt->verify(DECODE_KEY);
 ```
@@ -102,13 +97,9 @@ $keys = [
 $jwt = new \Lindelius\JWT\JWT(null, ['kid' => 'key_2']);
 ```
 
-If you use this approach, all you have to do when verifying the JWT is to provide the `JWT::decode()` (or `JWT::verify()`) method with the `$keys` array and it will automatically look-up and use the correct key.
+If you use this approach, all you have to do when verifying the JWT is to provide the `JWT::verify()` method with the `$keys` array and it will automatically look-up and use the correct key.
 
 ```php
-// Decode and verify
-$decodedJwt = \Lindelius\JWT\JWT::decode($encodedJwt, $keys);
-
-// Decode, then verify
 $decodedJwt = \Lindelius\JWT\JWT::decode($encodedJwt);
 $decodedJwt->verify($keys);
 ```
