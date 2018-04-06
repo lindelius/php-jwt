@@ -17,17 +17,10 @@ use Lindelius\JWT\Exception\RuntimeException;
  * Class JWT
  *
  * @author  Tom Lindelius <tom.lindelius@gmail.com>
- * @version 2018-02-19
+ * @version 2018-04-06
  */
 class JWT implements Iterator
 {
-    /**
-     * The hashing algorithm to use when encoding the JWT.
-     *
-     * @var string
-     */
-    private $algorithm;
-
     /**
      * The allowed hashing algorithms. If empty, all supported algorithms are
      * considered allowed.
@@ -44,39 +37,11 @@ class JWT implements Iterator
     protected static $defaultAlgorithm = 'HS256';
 
     /**
-     * The JWT hash.
-     *
-     * @var string|null
-     */
-    private $hash = null;
-
-    /**
-     * The JWT header.
-     *
-     * @var array
-     */
-    private $header = [];
-
-    /**
      * Leeway time (in seconds) to account for clock skew.
      *
      * @var int
      */
     protected static $leeway = 0;
-
-    /**
-     * The JWT payload.
-     *
-     * @var array
-     */
-    private $payload = [];
-
-    /**
-     * The JWT signature.
-     *
-     * @var string|null
-     */
-    private $signature = null;
 
     /**
      * Supported hashing algorithms.
@@ -91,6 +56,41 @@ class JWT implements Iterator
         'RS384' => ['openssl', 'SHA384'],
         'RS512' => ['openssl', 'SHA512'],
     ];
+
+    /**
+     * The hashing algorithm to use when encoding the JWT.
+     *
+     * @var string
+     */
+    private $algorithm;
+
+    /**
+     * The JWT hash.
+     *
+     * @var string|null
+     */
+    private $hash = null;
+
+    /**
+     * The JWT header.
+     *
+     * @var array
+     */
+    private $header = [];
+
+    /**
+     * The JWT payload.
+     *
+     * @var array
+     */
+    private $payload = [];
+
+    /**
+     * The JWT signature.
+     *
+     * @var string|null
+     */
+    private $signature = null;
 
     /**
      * Constructor for JWT objects.
@@ -122,6 +122,9 @@ class JWT implements Iterator
         $this->algorithm = $algorithm;
         $this->signature = $signature;
 
+        /**
+         * Make sure the JWT's header include at least the required fields.
+         */
         unset($header['alg']);
         $this->header = array_merge(
             [
@@ -190,7 +193,7 @@ class JWT implements Iterator
     }
 
     /**
-     * Creates a new instance of the model.
+     * Creates a new JWT instance.
      *
      * @param  array       $header
      * @param  array       $payload
@@ -299,7 +302,7 @@ class JWT implements Iterator
         $segments[] = url_safe_base64_encode(static::jsonEncode($this->payload));
 
         /**
-         * Sign the JWT.
+         * Sign the JWT with the given key.
          */
         $dataToSign = implode('.', $segments);
         $function   = static::$supportedAlgorithms[$this->algorithm][0];
@@ -317,6 +320,10 @@ class JWT implements Iterator
             throw new RuntimeException('Unable to sign the JWT.');
         }
 
+        /**
+         * If the JWT was successfully signed, piece together the segments and
+         * return the resulting hash.
+         */
         $segments[] = url_safe_base64_encode($this->signature);
 
         $this->hash = implode('.', $segments);
@@ -508,9 +515,7 @@ class JWT implements Iterator
      */
     public function valid()
     {
-        $key = key($this->payload);
-
-        return $key !== null && $key !== false;
+        return $this->key() !== null && $this->key() !== false;
     }
 
     /**
@@ -526,6 +531,12 @@ class JWT implements Iterator
      */
     public function verify($key)
     {
+        /**
+         * If the application is using multiple secret keys, attempt to look up
+         * which key was used when signing the JWT.
+         *
+         * The key's ID should be included in the JWT (the "kid" field).
+         */
         if (is_array($key) || $key instanceof ArrayAccess) {
             $kid = $this->getHeaderField('kid');
 
@@ -540,6 +551,9 @@ class JWT implements Iterator
             throw new InvalidArgumentException('Invalid key.');
         }
 
+        /**
+         * Validate the JWT's signature using the given key.
+         */
         if (empty($this->signature)) {
             throw new InvalidSignatureException('Invalid signature.');
         }
@@ -572,6 +586,9 @@ class JWT implements Iterator
             throw new InvalidSignatureException('Invalid JWT signature.');
         }
 
+        /**
+         * Validate any included (and supported) timestamp fields.
+         */
         $now = time();
 
         if (isset($this->nbf) && ($now + static::$leeway) < (float) $this->nbf) {
