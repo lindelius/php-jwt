@@ -197,31 +197,6 @@ class JWT implements Iterator
     }
 
     /**
-     * Creates a new JWT instance.
-     *
-     * @param  array       $header
-     * @param  array       $payload
-     * @param  string|null $signature
-     * @return static
-     * @throws DomainException
-     * @throws InvalidArgumentException
-     */
-    public static function create(array $header = [], array $payload = [], $signature = null)
-    {
-        $jwt = new static(
-            isset($header['alg']) ? $header['alg'] : null,
-            $header,
-            $signature
-        );
-
-        foreach ($payload as $claimName => $claimValue) {
-            $jwt->{$claimName} = $claimValue;
-        }
-
-        return $jwt;
-    }
-
-    /**
      * Gets the value of the "current" claim in the payload array.
      *
      * @return mixed
@@ -230,61 +205,6 @@ class JWT implements Iterator
     public function current()
     {
         return current($this->payload);
-    }
-
-    /**
-     * Decodes a JWT hash and returns the resulting object.
-     *
-     * @param  string $jwt
-     * @return static
-     * @throws DomainException
-     * @throws InvalidArgumentException
-     * @throws InvalidJwtException
-     * @throws JsonException
-     */
-    public static function decode($jwt)
-    {
-        if (empty($jwt) || !is_string($jwt)) {
-            throw new InvalidArgumentException('Invalid JWT.');
-        }
-
-        $segments = explode('.', $jwt);
-
-        if (count($segments) !== 3) {
-            throw new InvalidJwtException('Unexpected number of JWT segments.');
-        }
-
-        /**
-         * If the format looks good, attempt to decode its individual segments.
-         */
-        if (false === ($decodedHeader = url_safe_base64_decode($segments[0]))) {
-            throw new InvalidJwtException('Invalid header encoding.');
-        }
-
-        if (false === ($decodedPayload = url_safe_base64_decode($segments[1]))) {
-            throw new InvalidJwtException('Invalid payload encoding.');
-        }
-
-        if (false === ($decodedSignature = url_safe_base64_decode($segments[2]))) {
-            throw new InvalidJwtException('Invalid signature encoding.');
-        }
-
-        $header  = static::jsonDecode($decodedHeader);
-        $payload = static::jsonDecode($decodedPayload);
-
-        if (empty($header)) {
-            throw new InvalidJwtException('Invalid JWT header.');
-        }
-
-        if (empty($payload)) {
-            throw new InvalidJwtException('Invalid JWT payload.');
-        }
-
-        /**
-         * If the entire JWT was successfully decoded, create and return a new
-         * JWT instance populated with the decoded data.
-         */
-        return static::create($header, $payload, $decodedSignature);
     }
 
     /**
@@ -333,20 +253,6 @@ class JWT implements Iterator
         $this->hash = implode('.', $segments);
 
         return $this->hash;
-    }
-
-    /**
-     * Gets the allowed hashing algorithms.
-     *
-     * @return array
-     */
-    public static function getAllowedAlgorithms()
-    {
-        if (empty(static::$allowedAlgorithms)) {
-            return static::getSupportedAlgorithms();
-        }
-
-        return static::$allowedAlgorithms;
     }
 
     /**
@@ -410,16 +316,6 @@ class JWT implements Iterator
     }
 
     /**
-     * Gets the leeway time (in seconds).
-     *
-     * @return int
-     */
-    public static function getLeewayTime()
-    {
-        return static::$leeway;
-    }
-
-    /**
      * Gets the entire JWT payload.
      *
      * @return array
@@ -427,60 +323,6 @@ class JWT implements Iterator
     public function getPayload()
     {
         return $this->payload;
-    }
-
-    /**
-     * Gets the supported hashing algorithms.
-     *
-     * @return array
-     */
-    public static function getSupportedAlgorithms()
-    {
-        return array_keys(static::$supportedAlgorithms);
-    }
-
-    /**
-     * Decodes a given JSON string.
-     *
-     * @param  string $json
-     * @return mixed
-     * @throws JsonException
-     */
-    protected static function jsonDecode($json)
-    {
-        $data  = json_decode($json, true);
-        $error = json_last_error();
-
-        if ($error !== JSON_ERROR_NONE) {
-            throw new JsonException(sprintf(
-                'Unable to decode the given JSON string (%s).',
-                $error
-            ));
-        }
-
-        return $data;
-    }
-
-    /**
-     * Encodes the given data to a JSON string.
-     *
-     * @param  mixed $data
-     * @return string
-     * @throws JsonException
-     */
-    protected static function jsonEncode($data)
-    {
-        $json  = json_encode($data);
-        $error = json_last_error();
-
-        if ($error !== JSON_ERROR_NONE) {
-            throw new JsonException(sprintf(
-                'Unable to encode the given data (%s).',
-                $error
-            ));
-        }
-
-        return $json;
     }
 
     /**
@@ -628,5 +470,163 @@ class JWT implements Iterator
         }
 
         return true;
+    }
+
+    /**
+     * Creates a new JWT instance.
+     *
+     * @param  array       $header
+     * @param  array       $payload
+     * @param  string|null $signature
+     * @return static
+     * @throws DomainException
+     * @throws InvalidArgumentException
+     */
+    public static function create(array $header = [], array $payload = [], $signature = null)
+    {
+        $jwt = new static(
+            isset($header['alg']) ? $header['alg'] : null,
+            $header,
+            $signature
+        );
+
+        foreach ($payload as $claimName => $claimValue) {
+            $jwt->{$claimName} = $claimValue;
+        }
+
+        return $jwt;
+    }
+
+    /**
+     * Decodes a JWT hash and returns the resulting object.
+     *
+     * @param  string $jwt
+     * @return static
+     * @throws DomainException
+     * @throws InvalidArgumentException
+     * @throws InvalidJwtException
+     * @throws JsonException
+     */
+    public static function decode($jwt)
+    {
+        if (empty($jwt) || !is_string($jwt)) {
+            throw new InvalidArgumentException('Invalid JWT.');
+        }
+
+        $segments = explode('.', $jwt);
+
+        if (count($segments) !== 3) {
+            throw new InvalidJwtException('Unexpected number of JWT segments.');
+        }
+
+        /**
+         * If the format looks good, attempt to decode its individual segments.
+         */
+        if (false === ($decodedHeader = url_safe_base64_decode($segments[0]))) {
+            throw new InvalidJwtException('Invalid header encoding.');
+        }
+
+        if (false === ($decodedPayload = url_safe_base64_decode($segments[1]))) {
+            throw new InvalidJwtException('Invalid payload encoding.');
+        }
+
+        if (false === ($decodedSignature = url_safe_base64_decode($segments[2]))) {
+            throw new InvalidJwtException('Invalid signature encoding.');
+        }
+
+        $header  = static::jsonDecode($decodedHeader);
+        $payload = static::jsonDecode($decodedPayload);
+
+        if (empty($header)) {
+            throw new InvalidJwtException('Invalid JWT header.');
+        }
+
+        if (empty($payload)) {
+            throw new InvalidJwtException('Invalid JWT payload.');
+        }
+
+        /**
+         * If the entire JWT was successfully decoded, create and return a new
+         * JWT instance populated with the decoded data.
+         */
+        return static::create($header, $payload, $decodedSignature);
+    }
+
+    /**
+     * Gets the allowed hashing algorithms.
+     *
+     * @return array
+     */
+    public static function getAllowedAlgorithms()
+    {
+        if (empty(static::$allowedAlgorithms)) {
+            return static::getSupportedAlgorithms();
+        }
+
+        return static::$allowedAlgorithms;
+    }
+
+    /**
+     * Gets the leeway time (in seconds).
+     *
+     * @return int
+     */
+    public static function getLeewayTime()
+    {
+        return static::$leeway;
+    }
+
+    /**
+     * Gets the supported hashing algorithms.
+     *
+     * @return array
+     */
+    public static function getSupportedAlgorithms()
+    {
+        return array_keys(static::$supportedAlgorithms);
+    }
+
+    /**
+     * Decodes a given JSON string.
+     *
+     * @param  string $json
+     * @return mixed
+     * @throws JsonException
+     */
+    protected static function jsonDecode($json)
+    {
+        $data  = json_decode($json, true);
+        $error = json_last_error();
+
+        if ($error !== JSON_ERROR_NONE) {
+            throw new JsonException(sprintf(
+                'Unable to decode the given JSON string (%s).',
+                $error
+            ));
+        }
+
+        return $data;
+    }
+
+    /**
+     * Encodes the given data to a JSON string.
+     *
+     * @param  mixed $data
+     * @return string
+     * @throws JsonException
+     */
+    protected static function jsonEncode($data)
+    {
+        $json  = json_encode($data);
+        $error = json_last_error();
+
+        if ($error !== JSON_ERROR_NONE) {
+            throw new JsonException(sprintf(
+                'Unable to encode the given data (%s).',
+                $error
+            ));
+        }
+
+        return $json;
     }
 }
