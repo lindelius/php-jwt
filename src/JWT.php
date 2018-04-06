@@ -127,7 +127,7 @@ class JWT implements Iterator
         $this->signature = $signature;
 
         /**
-         * Make sure the JWT's header include at least the required fields.
+         * Make sure the JWT's header include the required fields.
          */
         unset($header['alg']);
         $this->header = array_merge(
@@ -142,37 +142,37 @@ class JWT implements Iterator
     /**
      * Gets the current value for a given claim.
      *
-     * @param  string $claimName
+     * @param  string $claim
      * @return mixed
      * @see    http://php.net/manual/en/language.oop5.overloading.php#object.get
      */
-    public function __get($claimName)
+    public function __get($claim)
     {
-        return $this->getClaim($claimName);
+        return $this->getClaim($claim);
     }
 
     /**
      * Checks whether a given claim has been set.
      *
-     * @param  string $claimName
+     * @param  string $claim
      * @return bool
      * @see    http://php.net/manual/en/language.oop5.overloading.php#object.isset
      */
-    public function __isset($claimName)
+    public function __isset($claim)
     {
-        return isset($this->payload[$claimName]);
+        return isset($this->payload[$claim]);
     }
 
     /**
      * Sets a new value for a given claim.
      *
-     * @param string $claimName
-     * @param mixed  $newValue
+     * @param string $claim
+     * @param mixed  $value
      * @see   http://php.net/manual/en/language.oop5.overloading.php#object.set
      */
-    public function __set($claimName, $newValue)
+    public function __set($claim, $value)
     {
-        $this->setClaim($claimName, $newValue);
+        $this->setClaim($claim, $value);
     }
 
     /**
@@ -274,6 +274,7 @@ class JWT implements Iterator
      * Gets the entire set of claims included in the JWT.
      *
      * @return array
+     * @see    JWT::getPayload()
      */
     public function getClaims()
     {
@@ -281,7 +282,7 @@ class JWT implements Iterator
     }
 
     /**
-     * Gets the JWT hash, if the JWT has been encoded.
+     * Gets the JWT hash.
      *
      * @return string|null
      */
@@ -291,7 +292,7 @@ class JWT implements Iterator
     }
 
     /**
-     * Gets the entire JWT header.
+     * Gets the JWT header.
      *
      * @return array
      */
@@ -316,7 +317,7 @@ class JWT implements Iterator
     }
 
     /**
-     * Gets the entire JWT payload.
+     * Gets the JWT payload.
      *
      * @return array
      */
@@ -490,8 +491,8 @@ class JWT implements Iterator
             $signature
         );
 
-        foreach ($payload as $claimName => $claimValue) {
-            $jwt->{$claimName} = $claimValue;
+        foreach ($payload as $claim => $value) {
+            $jwt->{$claim} = $value;
         }
 
         return $jwt;
