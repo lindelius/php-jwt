@@ -115,7 +115,11 @@ class JWT implements Iterator
             $algorithm = static::$defaultAlgorithm;
         }
 
-        if (empty(static::$supportedAlgorithms[$algorithm]) || !in_array($algorithm, static::getAllowedAlgorithms())) {
+        if (!in_array($algorithm, static::getAllowedAlgorithms())) {
+            throw new DomainException('Disallowed hashing algorithm.');
+        }
+
+        if (empty(static::getSupportedAlgorithms()[$algorithm])) {
             throw new DomainException('Unsupported hashing algorithm.');
         }
 
@@ -339,7 +343,7 @@ class JWT implements Iterator
     public static function getAllowedAlgorithms()
     {
         if (empty(static::$allowedAlgorithms)) {
-            return array_keys(static::$supportedAlgorithms);
+            return static::getSupportedAlgorithms();
         }
 
         return static::$allowedAlgorithms;
@@ -413,6 +417,16 @@ class JWT implements Iterator
     public function getPayload()
     {
         return $this->payload;
+    }
+
+    /**
+     * Gets the supported hashing algorithms.
+     *
+     * @return array
+     */
+    public static function getSupportedAlgorithms()
+    {
+        return array_keys(static::$supportedAlgorithms);
     }
 
     /**
