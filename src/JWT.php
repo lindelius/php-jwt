@@ -115,12 +115,12 @@ class JWT implements Iterator
             $algorithm = static::$defaultAlgorithm;
         }
 
-        if (!in_array($algorithm, static::getAllowedAlgorithms())) {
+        if (!in_array($algorithm, static::getSupportedAlgorithms())) {
             throw new DomainException('Unsupported hashing algorithm.');
         }
 
-        if (!in_array($algorithm, static::getSupportedAlgorithms())) {
-            throw new DomainException('Unsupported hashing algorithm.');
+        if (!in_array($algorithm, static::getAllowedAlgorithms())) {
+            throw new DomainException('Disallowed hashing algorithm.');
         }
 
         $this->algorithm = $algorithm;
@@ -588,8 +588,8 @@ class JWT implements Iterator
             url_safe_base64_encode(static::jsonEncode($this->getPayload()))
         );
 
-        $algorithm = static::getSupportedAlgorithms()[$this->algorithm][1];
-        $function  = static::getSupportedAlgorithms()[$this->algorithm][0];
+        $algorithm = static::$supportedAlgorithms[$this->algorithm][1];
+        $function  = static::$supportedAlgorithms[$this->algorithm][0];
         $verified  = false;
 
         if ($function === 'hash_hmac') {
@@ -615,15 +615,15 @@ class JWT implements Iterator
          */
         $now = time();
 
-        if (isset($this->nbf) && ($now + static::getLeewayTime()) < (float) $this->nbf) {
+        if (isset($this->nbf) && ($now + static::$leeway) < (float) $this->nbf) {
             throw new BeforeValidException('The JWT is not yet valid.');
         }
 
-        if (isset($this->iat) && ($now + static::getLeewayTime()) < (float) $this->iat) {
+        if (isset($this->iat) && ($now + static::$leeway) < (float) $this->iat) {
             throw new BeforeValidException('The JWT is not yet valid.');
         }
 
-        if (isset($this->exp) && ($now - static::getLeewayTime()) >= (float) $this->exp) {
+        if (isset($this->exp) && ($now - static::$leeway) >= (float) $this->exp) {
             throw new ExpiredJwtException('The JWT has expired.');
         }
 
