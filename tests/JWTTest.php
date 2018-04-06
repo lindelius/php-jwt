@@ -372,4 +372,22 @@ class JWTTest extends TestCase
     {
         JWT::decode('eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.U29tZXRoaW5nIG90aGVyIHRoYW4gSlNPTg.yQz7d3ZjXJ508tZedOxG3aZPEUVltphXrGFz6lE6Jhk');
     }
+
+    public function testIteratorImplementation()
+    {
+        $jwt = new JWT();
+        $jwt->setClaim('a', 1);
+        $jwt->setClaim('b', 2);
+        $jwt->setClaim('c', 3);
+
+        $claims = [];
+
+        foreach ($jwt as $claim => $value) {
+            $claims[$claim] = $value;
+        }
+
+        $this->assertEquals($jwt->a, $claims['a']);
+        $this->assertEquals($jwt->b, $claims['b']);
+        $this->assertEquals($jwt->c, $claims['c']);
+    }
 }
