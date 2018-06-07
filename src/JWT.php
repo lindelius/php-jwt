@@ -258,9 +258,7 @@ class JWT implements Iterator
          */
         $segments[] = url_safe_base64_encode($this->signature);
 
-        $this->hash = implode('.', $segments);
-
-        return $this->hash;
+        return ($this->hash = implode('.', $segments));
     }
 
     /**
@@ -409,9 +407,7 @@ class JWT implements Iterator
     {
         /**
          * If the application is using multiple secret keys, attempt to look up
-         * which key was used when signing the JWT.
-         *
-         * The key's ID should be included in the JWT (the "kid" field).
+         * the correct key using the "kid" header field.
          */
         if (is_array($key) || $key instanceof ArrayAccess) {
             $kid = $this->getHeaderField('kid');
@@ -474,19 +470,17 @@ class JWT implements Iterator
         }
 
         /**
-         * Validate any included (and supported) timestamp fields.
+         * Validate time constraints, if included.
          */
-        $now = time();
-
-        if (isset($this->nbf) && ($now + static::$leeway) < (float) $this->nbf) {
+        if (isset($this->nbf) && (time() + static::$leeway) < (float) $this->nbf) {
             throw new BeforeValidException('The JWT is not yet valid.');
         }
 
-        if (isset($this->iat) && ($now + static::$leeway) < (float) $this->iat) {
+        if (isset($this->iat) && (time() + static::$leeway) < (float) $this->iat) {
             throw new BeforeValidException('The JWT is not yet valid.');
         }
 
-        if (isset($this->exp) && ($now - static::$leeway) >= (float) $this->exp) {
+        if (isset($this->exp) && (time() - static::$leeway) >= (float) $this->exp) {
             throw new ExpiredJwtException('The JWT has expired.');
         }
 
