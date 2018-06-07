@@ -193,7 +193,15 @@ class JWT implements Iterator
      */
     public function __unset($claimName)
     {
-        unset($this->payload[$claimName]);
+        if (isset($this->payload[$claimName])) {
+            unset($this->payload[$claimName]);
+
+            /**
+             * If the JWT has been previously encoded, clear the generated hash
+             * since it is no longer valid.
+             */
+            $this->hash = null;
+        }
     }
 
     /**
