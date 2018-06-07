@@ -17,7 +17,7 @@ use Lindelius\JWT\Exception\RuntimeException;
  * Class JWT
  *
  * @author  Tom Lindelius <tom.lindelius@gmail.com>
- * @version 2018-04-06
+ * @version 2018-06-07
  */
 class JWT implements Iterator
 {
@@ -65,35 +65,35 @@ class JWT implements Iterator
     private $algorithm;
 
     /**
-     * The JWT hash.
+     * The JWT's hash.
      *
      * @var string|null
      */
     private $hash = null;
 
     /**
-     * The JWT header.
+     * The JWT's header.
      *
      * @var array
      */
     private $header = [];
 
     /**
-     * The JWT payload.
+     * The JWT's payload.
      *
      * @var array
      */
     private $payload = [];
 
     /**
-     * The JWT signature.
+     * The JWT's signature.
      *
      * @var string|null
      */
     private $signature = null;
 
     /**
-     * Constructor for JWT objects.
+     * JWT constructor.
      *
      * @param  string|null $algorithm
      * @param  array       $header
@@ -194,14 +194,14 @@ class JWT implements Iterator
     public function __unset($claimName)
     {
         if (isset($this->payload[$claimName])) {
-            unset($this->payload[$claimName]);
-
             /**
-             * If the JWT has been previously encoded, clear the generated hash
-             * since it is no longer valid.
+             * If the claim exists and the JWT has been previously encoded,
+             * clear the generated hash since it is no longer valid.
              */
             $this->hash = null;
         }
+
+        unset($this->payload[$claimName]);
     }
 
     /**
@@ -252,13 +252,15 @@ class JWT implements Iterator
             throw new RuntimeException('Unable to sign the JWT.');
         }
 
+        $segments[] = url_safe_base64_encode($this->signature);
+
         /**
          * If the JWT was successfully signed, piece together the segments and
          * return the resulting hash.
          */
-        $segments[] = url_safe_base64_encode($this->signature);
+        $this->hash = implode('.', $segments);
 
-        return ($this->hash = implode('.', $segments));
+        return $this->hash;
     }
 
     /**
