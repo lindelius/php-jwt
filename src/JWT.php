@@ -397,14 +397,15 @@ class JWT implements Iterator
      * Verifies that the JWT is correctly formatted and that the given signature
      * is valid.
      *
-     * @param  mixed $key
+     * @param  mixed       $key
+     * @param  string|null $audience
      * @return bool
      * @throws BeforeValidException
      * @throws ExpiredJwtException
      * @throws InvalidSignatureException
      * @throws JsonException
      */
-    public function verify($key)
+    public function verify($key, $audience = null)
     {
         /**
          * If the application is using multiple secret keys, attempt to look up
@@ -459,6 +460,17 @@ class JWT implements Iterator
 
         if (!$verified) {
             throw new InvalidSignatureException('Invalid JWT signature.');
+        }
+
+        /**
+         * Validate the audience constraint, if included.
+         */
+        if (isset($this->aud)) {
+            $validAudiences = is_array($this->aud) ? $this->aud : [$this->aud];
+
+            if (!in_array($audience, $validAudiences)) {
+                throw new InvalidJwtException('Invalid JWT audience.');
+            }
         }
 
         /**
