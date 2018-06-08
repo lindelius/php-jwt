@@ -6,8 +6,8 @@ namespace Lindelius\JWT\Exception;
  * Class DomainException
  *
  * @author  Tom Lindelius <tom.lindelius@gmail.com>
- * @version 2017-09-25
+ * @version 2018-06-08
  */
-class DomainException extends \DomainException
+class DomainException extends \DomainException implements Exception
 {
 }

@@ -17,7 +17,7 @@ use Lindelius\JWT\Exception\RuntimeException;
  * Class JWT
  *
  * @author  Tom Lindelius <tom.lindelius@gmail.com>
- * @version 2018-06-07
+ * @version 2018-06-08
  */
 class JWT implements Iterator
 {
@@ -402,6 +402,7 @@ class JWT implements Iterator
      * @return bool
      * @throws BeforeValidException
      * @throws ExpiredJwtException
+     * @throws InvalidJwtException
      * @throws InvalidSignatureException
      * @throws JsonException
      */
