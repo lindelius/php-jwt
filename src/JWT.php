@@ -25,7 +25,7 @@ class JWT implements Iterator
      * The allowed hashing algorithms. If empty, all supported algorithms are
      * considered allowed.
      *
-     * @var array
+     * @var string[]
      */
     protected static $allowedAlgorithms = [];
 
@@ -46,7 +46,7 @@ class JWT implements Iterator
     /**
      * Supported hashing algorithms.
      *
-     * @var array
+     * @var array[]
      */
     protected static $supportedAlgorithms = [
         'HS256' => ['hash_hmac', 'SHA256'],

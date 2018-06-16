@@ -65,7 +65,7 @@ class MyJWT extends \Lindelius\JWT\JWT
      * The allowed hashing algorithms. If empty, all supported algorithms are
      * considered allowed.
      *
-     * @var array
+     * @var string[]
      */
     protected static $allowedAlgorithms = ['HS512', 'RS256'];
 
@@ -80,7 +80,9 @@ class MyJWT extends \Lindelius\JWT\JWT
 
 #### Audiences
 
-If you would like to restrict a JWT to one or more audiences you can easily do so with the `aud` claim. When you create the JWT, set the `aud` claim to one or more audiences, and then when you verify the JWT you just pass the current audience as the second parameter to the `JWT::verify()` method and it will validate it for you. If the JWT should only be valid for a single audience, you can set the value to a string. If it should be valid for more than one audience the value must be an array of strings.
+If you would like to restrict a JWT to one or more audiences you can easily do so with the `aud` claim. When you create the JWT, set the `aud` claim to one or more audiences, and then when you verify the JWT you just pass the current audience as the second parameter to the `JWT::verify()` method and it will validate it for you.
+
+If the JWT should only be valid for a single audience, you can set the value to a string. If it should be valid for more than one audience the value must be an array of strings.
 
 ```php
 $decodedJwt = \Lindelius\JWT\JWT::decode($encodedJwt);
