@@ -9,56 +9,11 @@ use PHPUnit\Framework\TestCase;
  * Class JWTTest
  *
  * @author  Tom Lindelius <tom.lindelius@gmail.com>
- * @version 2018-04-06
+ * @version 2018-06-16
  */
 class JWTTest extends TestCase
 {
-    /**
-     * @return array
-     */
-    public function invalidKeyProvider()
-    {
-        return [
-            [1],
-            [0.07],
-            [null],
-            [new \stdClass()],
-            [''],
-            [false],
-        ];
-    }
-
-    /**
-     * @return array
-     */
-    public function invalidHashProvider()
-    {
-        return [
-            [['an_array']],
-            [1],
-            [0.07],
-            [null],
-            [new \stdClass()],
-            [''],
-            [false],
-            [curl_init()],
-        ];
-    }
-
-    /**
-     * @return array
-     */
-    public function invalidAlgorithmProvider()
-    {
-        return [
-            [['an_array']],
-            [1],
-            [0.07],
-            [new \stdClass()],
-            [false],
-            [curl_init()],
-        ];
-    }
+    use TestDataProviders;
 
     /**
      * @expectedException \DomainException
@@ -376,18 +331,22 @@ class JWTTest extends TestCase
     public function testIteratorImplementation()
     {
         $jwt = new JWT();
+
         $jwt->setClaim('a', 1);
         $jwt->setClaim('b', 2);
         $jwt->setClaim('c', 3);
 
+        /**
+         * Get all of the JWT's claims using the iterator implementation.
+         */
         $claims = [];
 
         foreach ($jwt as $claim => $value) {
             $claims[$claim] = $value;
         }
 
-        $this->assertEquals($jwt->a, $claims['a']);
-        $this->assertEquals($jwt->b, $claims['b']);
-        $this->assertEquals($jwt->c, $claims['c']);
+        $this->assertEquals($jwt->a, @$claims['a']);
+        $this->assertEquals($jwt->b, @$claims['b']);
+        $this->assertEquals($jwt->c, @$claims['c']);
     }
 }

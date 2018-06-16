@@ -16,7 +16,7 @@ class RestrictedAlgorithmsJWT extends JWT
      * The allowed hashing algorithms. If empty, all supported algorithms are
      * considered allowed.
      *
-     * @var array
+     * @var string[]
      */
     protected static $allowedAlgorithms = ['HS256'];
 }
