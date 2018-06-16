@@ -80,9 +80,20 @@ class MyJWT extends \Lindelius\JWT\JWT
 
 #### Audiences
 
-If you would like to restrict a JWT to one or more audiences you can easily do so with the `aud` claim. When you create the JWT, set the `aud` claim to one or more audiences, and then when you verify the JWT you just pass the current audience as the second parameter to the `JWT::verify()` method and it will validate it for you.
+If you would like to restrict a JWT to one or more audiences you can easily do so with the `aud` claim. When you create the JWT, set the `aud` claim to one or more audiences. If the JWT should only be valid for a single audience, you can set the value to a string. If it should be valid for more than one audience, the value must be an array of strings.
 
-If the JWT should only be valid for a single audience, you can set the value to a string. If it should be valid for more than one audience the value must be an array of strings.
+```php
+$jwt = new \Lindelius\JWT\JWT();
+
+$jwt->aud = [
+    'https://myapp.tld',
+    'https://yourapp.tld',
+];
+
+$encodedJwt = $jwt->encode(ENCODE_KEY);
+```
+
+When you verify the JWT, just pass the current audience as the second parameter to the `JWT::verify()` method and it will validate it for you.
 
 ```php
 $decodedJwt = \Lindelius\JWT\JWT::decode($encodedJwt);
