@@ -464,7 +464,7 @@ class JWT implements Iterator
         /**
          * Validate the audience constraint, if included.
          */
-        if (isset($this->aud)) {
+        if (!empty($this->aud)) {
             $validAudiences = is_array($this->aud) ? $this->aud : [$this->aud];
 
             if (!in_array($audience, $validAudiences)) {
