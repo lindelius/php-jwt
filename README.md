@@ -6,7 +6,19 @@ This library conforms to [RFC 7519](https://tools.ietf.org/html/rfc7519), with t
 
 ## Requirements
 
-* PHP 5.6, or higher
+- Composer
+- PHP 5.6, or higher
+
+## Table of Contents
+
+- [Installation](#installation)
+- [Usage](#usage)
+    - [Advanced Usage](#advanced-usage)
+        - [Algorithm Choices](#algorithm-choices)
+        - [Audiences](#audiences)
+        - [Leeway Time](#leeway-time)
+        - [Multiple Encryption Keys](#multiple-encryption-keys)
+    - [Exceptions](#exceptions)
 
 ## Installation
 
@@ -43,7 +55,7 @@ $decodedJwt = \Lindelius\JWT\JWT::decode($encodedJwt);
 
 /**
  * You can access the claims as soon as you have decoded the JWT.
- * But, NEVER trust the JWT until you have verified it, though!
+ * However, NEVER trust the JWT until you have verified it!
  */
 $isAdmin = (bool) $decodedJwt->admin;
 
@@ -137,4 +149,22 @@ If you use this approach, all you have to do when verifying the JWT is to provid
 ```php
 $decodedJwt = \Lindelius\JWT\JWT::decode($encodedJwt);
 $decodedJwt->verify($keys);
+```
+
+### Exceptions
+
+This library throws a variety of different exceptions in order to allow for different actions to be taken depending on what exactly it was that went wrong. However, all of these exceptions implements the `Lindelius\JWT\Exception\Exception` interface, making it possible to catch **any** exception thrown by this library without having to list all of them.
+
+```php
+try {
+    $jwt = new \Lindelius\JWT\JWT();
+
+    $jwt->exp = time() + (60 * 60 * 2); // expire after 2 hours
+    $jwt->iat = time();
+    $jwt->sub = $user->id;
+
+    $accessToken = $jwt->encode(ENCODE_KEY);
+} catch (\Lindelius\JWT\Exception\Exception $exception) {
+    // This catches any exception thrown by the JWT library
+}
 ```
