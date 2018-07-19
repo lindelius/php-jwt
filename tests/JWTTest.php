@@ -27,6 +27,7 @@ class JWTTest extends TestCase
     /**
      * @expectedException \Lindelius\Jwt\Exception\DomainException
      * @expectedExceptionMessage Unsupported hashing algorithm.
+     * @throws \Lindelius\JWT\Exception\InvalidJwtException
      */
     public function testDecodeWithUnsupportedAlgorithm()
     {
@@ -45,6 +46,7 @@ class JWTTest extends TestCase
     /**
      * @expectedException \Lindelius\Jwt\Exception\DomainException
      * @expectedExceptionMessage Disallowed hashing algorithm.
+     * @throws \Lindelius\JWT\Exception\InvalidJwtException
      */
     public function testDecodeWithDisallowedAlgorithm()
     {
@@ -90,6 +92,7 @@ class JWTTest extends TestCase
     /**
      * @expectedException \Lindelius\JWT\Exception\InvalidArgumentException
      * @expectedExceptionMessage Invalid hashing algorithm.
+     * @throws \Lindelius\JWT\Exception\InvalidJwtException
      */
     public function testDecodeWithInvalidAlgorithm()
     {
@@ -101,6 +104,7 @@ class JWTTest extends TestCase
      * @expectedException \Lindelius\JWT\Exception\InvalidArgumentException
      * @expectedExceptionMessage Invalid JWT.
      * @dataProvider             invalidHashProvider
+     * @throws \Lindelius\JWT\Exception\InvalidJwtException
      */
     public function testDecodeWithInvalidHash($hash)
     {
@@ -131,6 +135,9 @@ class JWTTest extends TestCase
         $decodedJwt->verify($keys);
     }
 
+    /**
+     * @throws \Lindelius\JWT\Exception\InvalidJwtException
+     */
     public function testFullLifeCycleHS256()
     {
         $jwt = new JWT('HS256');
@@ -143,6 +150,9 @@ class JWTTest extends TestCase
         $this->assertEquals('any_value', $decodedJwt->getClaim('some_field'));
     }
 
+    /**
+     * @throws \Lindelius\JWT\Exception\InvalidJwtException
+     */
     public function testFullLifeCycleHS384()
     {
         $jwt = new JWT('HS384');
@@ -155,6 +165,9 @@ class JWTTest extends TestCase
         $this->assertEquals('any_value', $decodedJwt->getClaim('some_field'));
     }
 
+    /**
+     * @throws \Lindelius\JWT\Exception\InvalidJwtException
+     */
     public function testFullLifeCycleHS512()
     {
         $jwt = new JWT('HS512');
@@ -167,6 +180,9 @@ class JWTTest extends TestCase
         $this->assertEquals('any_value', $decodedJwt->getClaim('some_field'));
     }
 
+    /**
+     * @throws \Lindelius\JWT\Exception\InvalidJwtException
+     */
     public function testFullLifeCycleRS256()
     {
         $privateKey = null;
@@ -186,6 +202,9 @@ class JWTTest extends TestCase
         $this->assertEquals('any_value', $decodedJwt->getClaim('some_field'));
     }
 
+    /**
+     * @throws \Lindelius\JWT\Exception\InvalidJwtException
+     */
     public function testFullLifeCycleRS384()
     {
         $privateKey = null;
@@ -205,6 +224,9 @@ class JWTTest extends TestCase
         $this->assertEquals('any_value', $decodedJwt->getClaim('some_field'));
     }
 
+    /**
+     * @throws \Lindelius\JWT\Exception\InvalidJwtException
+     */
     public function testFullLifeCycleRS512()
     {
         $privateKey = null;
@@ -224,6 +246,9 @@ class JWTTest extends TestCase
         $this->assertEquals('any_value', $decodedJwt->getClaim('some_field'));
     }
 
+    /**
+     * @throws \Lindelius\JWT\Exception\InvalidJwtException
+     */
     public function testDecodeAndVerifyWithValidSignature()
     {
         $jwt = JWT::decode('eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzb21lX2ZpZWxkIjoiYW55X3ZhbHVlIn0.yQz7d3ZjXJ508tZedOxG3aZPEUVltphXrGFz6lE6Jhk');
@@ -234,6 +259,7 @@ class JWTTest extends TestCase
 
     /**
      * @expectedException \Lindelius\JWT\Exception\InvalidSignatureException
+     * @throws \Lindelius\JWT\Exception\InvalidJwtException
      */
     public function testDecodeAndVerifyWithInvalidSignature()
     {
@@ -241,87 +267,10 @@ class JWTTest extends TestCase
         $jwt->verify('my_key');
     }
 
-    public function testDecodeWithExpWithinLeewayTime()
-    {
-        $jwt = new LeewayJWT();
-        $jwt->setClaim('exp', time() - 30);
-
-        $decodedJwt = LeewayJWT::decode($jwt->encode('my_key'));
-        $decodedJwt->verify('my_key');
-
-        $this->assertInstanceOf(
-            LeewayJWT::class,
-            $decodedJwt
-        );
-    }
-
-    /**
-     * @expectedException \Lindelius\JWT\Exception\ExpiredJwtException
-     */
-    public function testDecodeWithExpOutsideOfLeewayTime()
-    {
-        $jwt = new LeewayJWT();
-        $jwt->setClaim('exp', time() - 100);
-
-        $decodedJwt = LeewayJWT::decode($jwt->encode('my_key'));
-        $decodedJwt->verify('my_key');
-    }
-
-    public function testDecodeWithIatWithinLeewayTime()
-    {
-        $jwt = new LeewayJWT();
-        $jwt->setClaim('iat', time() + 30);
-
-        $decodedJwt = LeewayJWT::decode($jwt->encode('my_key'));
-        $decodedJwt->verify('my_key');
-
-        $this->assertInstanceOf(
-            LeewayJWT::class,
-            $decodedJwt
-        );
-    }
-
-    /**
-     * @expectedException \Lindelius\JWT\Exception\BeforeValidException
-     */
-    public function testDecodeWithIatOutsideOfLeewayTime()
-    {
-        $jwt = new LeewayJWT();
-        $jwt->setClaim('iat', time() + 100);
-
-        $decodedJwt = LeewayJWT::decode($jwt->encode('my_key'));
-        $decodedJwt->verify('my_key');
-    }
-
-    public function testDecodeWithNbfWithinLeewayTime()
-    {
-        $jwt = new LeewayJWT();
-        $jwt->setClaim('nbf', time() + 30);
-
-        $decodedJwt = LeewayJWT::decode($jwt->encode('my_key'));
-        $decodedJwt->verify('my_key');
-
-        $this->assertInstanceOf(
-            LeewayJWT::class,
-            $decodedJwt
-        );
-    }
-
-    /**
-     * @expectedException \Lindelius\JWT\Exception\BeforeValidException
-     */
-    public function testDecodeWithNbfOutsideOfLeewayTime()
-    {
-        $jwt = new LeewayJWT();
-        $jwt->setClaim('nbf', time() + 100);
-
-        $decodedJwt = LeewayJWT::decode($jwt->encode('my_key'));
-        $decodedJwt->verify('my_key');
-    }
-
     /**
      * @expectedException \Lindelius\JWT\Exception\JsonException
      * @expectedExceptionMessage Unable to decode the given JSON string
+     * @throws \Lindelius\JWT\Exception\InvalidJwtException
      */
     public function testDecodeTokenWithInvalidJson()
     {
