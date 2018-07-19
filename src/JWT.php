@@ -420,11 +420,13 @@ class JWT implements Iterator
         if (is_array($key) || $key instanceof ArrayAccess) {
             $kid = $this->getHeaderField('kid');
 
-            if ($kid === null || (!is_string($kid) && !is_numeric($kid))) {
-                throw new InvalidJwtException('Invalid "kid" value. Unable to lookup secret key.');
-            }
+            if ($kid !== null) {
+                if (!is_string($kid) && !is_numeric($kid)) {
+                    throw new InvalidJwtException('Invalid "kid" value. Unable to lookup secret key.');
+                }
 
-            $key = array_key_exists($kid, $key) ? $key[$kid] : null;
+                $key = array_key_exists($kid, $key) ? $key[$kid] : null;
+            }
         }
 
         if (empty($key) || (!is_string($key) && !is_resource($key))) {
@@ -470,7 +472,23 @@ class JWT implements Iterator
          * Validate the audience constraint, if included.
          */
         if (!empty($this->aud)) {
-            $validAudiences = is_array($this->aud) ? $this->aud : [$this->aud];
+            /**
+             * Make sure that the value of the audience claim is either a string
+             * or an array of strings.
+             */
+            if (is_array($this->aud)) {
+                foreach ($this->aud as $aud) {
+                    if (!is_string($aud)) {
+                        throw new InvalidJwtException('Invalid "aud" value.');
+                    }
+                }
+
+                $validAudiences = $this->aud;
+            } elseif (is_string($this->aud)) {
+                $validAudiences = [$this->aud];
+            } else {
+                throw new InvalidJwtException('Invalid "aud" value.');
+            }
 
             if (!in_array($audience, $validAudiences)) {
                 throw new InvalidAudienceException('Invalid JWT audience.');
@@ -480,16 +498,28 @@ class JWT implements Iterator
         /**
          * Validate time constraints, if included.
          */
-        if (isset($this->nbf) && (time() + static::$leeway) < (float) $this->nbf) {
-            throw new BeforeValidException('The JWT is not yet valid.');
+        if (isset($this->nbf)) {
+            if (!is_numeric($this->nbf)) {
+                throw new InvalidJwtException('Invalid "nbf" value.');
+            } elseif ((time() + static::$leeway) < (float) $this->nbf) {
+                throw new BeforeValidException('The JWT is not yet valid.');
+            }
         }
 
-        if (isset($this->iat) && (time() + static::$leeway) < (float) $this->iat) {
-            throw new BeforeValidException('The JWT is not yet valid.');
+        if (isset($this->iat)) {
+            if (!is_numeric($this->iat)) {
+                throw new InvalidJwtException('Invalid "iat" value.');
+            } elseif ((time() + static::$leeway) < (float) $this->iat) {
+                throw new BeforeValidException('The JWT is not yet valid.');
+            }
         }
 
-        if (isset($this->exp) && (time() - static::$leeway) >= (float) $this->exp) {
-            throw new ExpiredJwtException('The JWT has expired.');
+        if (isset($this->exp)) {
+            if (!is_numeric($this->exp)) {
+                throw new InvalidJwtException('Invalic "exp" value.');
+            } elseif ((time() - static::$leeway) >= (float) $this->exp) {
+                throw new ExpiredJwtException('The JWT has expired.');
+            }
         }
 
         return true;
