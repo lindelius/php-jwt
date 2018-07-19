@@ -188,20 +188,22 @@ class JWT implements Iterator
     }
 
     /**
-     * Unsets a given claim and clears the generated hash.
+     * Unsets a given claim.
      *
      * @param string $claimName
      * @see   http://php.net/manual/en/language.oop5.overloading.php#object.unset
      */
     public function __unset($claimName)
     {
-        unset($this->payload[$claimName]);
+        if (array_key_exists($claimName, $this->payload)) {
+            /**
+             * If the claim exists and the JWT has been previously encoded,
+             * clear the generated hash since it is no longer valid.
+             */
+            $this->hash = null;
+        }
 
-        /**
-         * If the JWT has been previously encoded, clear the generated hash
-         * since it is no longer valid.
-         */
-        $this->hash = null;
+        unset($this->payload[$claimName]);
     }
 
     /**
