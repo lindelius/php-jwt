@@ -2,6 +2,7 @@
 
 namespace Lindelius\JWT\Tests;
 
+use Lindelius\JWT\Tests\JWT\LeewayJWT;
 use PHPUnit\Framework\TestCase;
 
 /**

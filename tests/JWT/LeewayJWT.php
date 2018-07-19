@@ -1,6 +1,6 @@
 <?php
 
-namespace Lindelius\JWT\Tests;
+namespace Lindelius\JWT\Tests\JWT;
 
 use Lindelius\JWT\JWT;
 
@@ -8,7 +8,7 @@ use Lindelius\JWT\JWT;
  * Class LeewayJWT
  *
  * @author  Tom Lindelius <tom.lindelius@gmail.com>
- * @version 2017-03-05
+ * @version 2018-07-19
  */
 class LeewayJWT extends JWT
 {
