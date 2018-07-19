@@ -420,11 +420,11 @@ class JWT implements Iterator
         if (is_array($key) || $key instanceof ArrayAccess) {
             $kid = $this->getHeaderField('kid');
 
-            if ($kid !== null && isset($key[$kid])) {
-                $key = $key[$kid];
-            } else {
+            if ($kid === null || (!is_string($kid) && !is_numeric($kid))) {
                 throw new InvalidJwtException('Invalid "kid" value. Unable to lookup secret key.');
             }
+
+            $key = array_key_exists($kid, $key) ? $key[$kid] : null;
         }
 
         if (empty($key) || (!is_string($key) && !is_resource($key))) {
