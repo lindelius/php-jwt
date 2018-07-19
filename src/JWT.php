@@ -8,7 +8,9 @@ use Lindelius\JWT\Exception\BeforeValidException;
 use Lindelius\JWT\Exception\DomainException;
 use Lindelius\JWT\Exception\ExpiredJwtException;
 use Lindelius\JWT\Exception\InvalidArgumentException;
+use Lindelius\JWT\Exception\InvalidAudienceException;
 use Lindelius\JWT\Exception\InvalidJwtException;
+use Lindelius\JWT\Exception\InvalidKeyException;
 use Lindelius\JWT\Exception\InvalidSignatureException;
 use Lindelius\JWT\Exception\JsonException;
 use Lindelius\JWT\Exception\RuntimeException;
@@ -17,7 +19,7 @@ use Lindelius\JWT\Exception\RuntimeException;
  * Class JWT
  *
  * @author  Tom Lindelius <tom.lindelius@gmail.com>
- * @version 2018-06-08
+ * @version 2018-07-19
  */
 class JWT implements Iterator
 {
@@ -220,13 +222,14 @@ class JWT implements Iterator
      *
      * @param  mixed $key
      * @return string
+     * @throws InvalidKeyException
      * @throws JsonException
      * @throws RuntimeException
      */
     public function encode($key)
     {
         if (empty($key) || (!is_string($key) && !is_resource($key))) {
-            throw new InvalidArgumentException('Invalid key.');
+            throw new InvalidKeyException('Invalid key.');
         }
 
         $segments   = [];
@@ -402,7 +405,9 @@ class JWT implements Iterator
      * @return bool
      * @throws BeforeValidException
      * @throws ExpiredJwtException
+     * @throws InvalidAudienceException
      * @throws InvalidJwtException
+     * @throws InvalidKeyException
      * @throws InvalidSignatureException
      * @throws JsonException
      */
@@ -423,7 +428,7 @@ class JWT implements Iterator
         }
 
         if (empty($key) || (!is_string($key) && !is_resource($key))) {
-            throw new InvalidArgumentException('Invalid key.');
+            throw new InvalidKeyException('Invalid key.');
         }
 
         /**
@@ -468,7 +473,7 @@ class JWT implements Iterator
             $validAudiences = is_array($this->aud) ? $this->aud : [$this->aud];
 
             if (!in_array($audience, $validAudiences)) {
-                throw new InvalidJwtException('Invalid JWT audience.');
+                throw new InvalidAudienceException('Invalid JWT audience.');
             }
         }
 
