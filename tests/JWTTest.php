@@ -9,14 +9,14 @@ use PHPUnit\Framework\TestCase;
  * Class JWTTest
  *
  * @author  Tom Lindelius <tom.lindelius@gmail.com>
- * @version 2018-06-16
+ * @version 2018-07-19
  */
 class JWTTest extends TestCase
 {
     use TestDataProviders;
 
     /**
-     * @expectedException \DomainException
+     * @expectedException \Lindelius\Jwt\Exception\DomainException
      * @expectedExceptionMessage Unsupported hashing algorithm.
      */
     public function testCreateWithUnsupportedAlgorithm()
@@ -25,7 +25,7 @@ class JWTTest extends TestCase
     }
 
     /**
-     * @expectedException \DomainException
+     * @expectedException \Lindelius\Jwt\Exception\DomainException
      * @expectedExceptionMessage Unsupported hashing algorithm.
      */
     public function testDecodeWithUnsupportedAlgorithm()
@@ -34,7 +34,7 @@ class JWTTest extends TestCase
     }
 
     /**
-     * @expectedException \DomainException
+     * @expectedException \Lindelius\Jwt\Exception\DomainException
      * @expectedExceptionMessage Disallowed hashing algorithm.
      */
     public function testCreateWithDisallowedAlgorithm()
@@ -43,7 +43,7 @@ class JWTTest extends TestCase
     }
 
     /**
-     * @expectedException \DomainException
+     * @expectedException \Lindelius\Jwt\Exception\DomainException
      * @expectedExceptionMessage Disallowed hashing algorithm.
      */
     public function testDecodeWithDisallowedAlgorithm()
@@ -53,7 +53,7 @@ class JWTTest extends TestCase
 
     /**
      * @param mixed $key
-     * @expectedException \InvalidArgumentException
+     * @expectedException \Lindelius\JWT\Exception\InvalidJwtException
      * @expectedExceptionMessage Invalid key.
      * @dataProvider             invalidKeyProvider
      */
@@ -65,7 +65,7 @@ class JWTTest extends TestCase
 
     /**
      * @param mixed $key
-     * @expectedException \InvalidArgumentException
+     * @expectedException \Lindelius\JWT\Exception\InvalidJwtException
      * @expectedExceptionMessage Invalid key.
      * @dataProvider             invalidKeyProvider
      */
@@ -78,7 +78,7 @@ class JWTTest extends TestCase
 
     /**
      * @param mixed $algorithm
-     * @expectedException \InvalidArgumentException
+     * @expectedException \Lindelius\JWT\Exception\InvalidArgumentException
      * @expectedExceptionMessage Invalid hashing algorithm.
      * @dataProvider             invalidAlgorithmProvider
      */
@@ -88,7 +88,7 @@ class JWTTest extends TestCase
     }
 
     /**
-     * @expectedException \InvalidArgumentException
+     * @expectedException \Lindelius\JWT\Exception\InvalidArgumentException
      * @expectedExceptionMessage Invalid hashing algorithm.
      */
     public function testDecodeWithInvalidAlgorithm()
@@ -98,7 +98,7 @@ class JWTTest extends TestCase
 
     /**
      * @param mixed $hash
-     * @expectedException \InvalidArgumentException
+     * @expectedException \Lindelius\JWT\Exception\InvalidArgumentException
      * @expectedExceptionMessage Invalid JWT.
      * @dataProvider             invalidHashProvider
      */
@@ -118,9 +118,9 @@ class JWTTest extends TestCase
 
     /**
      * @expectedException \Lindelius\JWT\Exception\InvalidJwtException
-     * @expectedExceptionMessage Invalid "kid" value.
+     * @expectedExceptionMessage Invalid key.
      */
-    public function testDecodeWithInvalidKeyId()
+    public function testDecodeWithIncorrectKeyId()
     {
         $keys = ['correct_kid' => 'my_key'];
 
