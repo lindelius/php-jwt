@@ -9,7 +9,7 @@ use PHPUnit\Framework\TestCase;
  * Class ExpClaimTest
  *
  * @author  Tom Lindelius <tom.lindelius@gmail.com>
- * @version 2018-07-19
+ * @version 2018-07-24
  */
 class ExpClaimTest extends TestCase
 {
@@ -31,8 +31,8 @@ class ExpClaimTest extends TestCase
     }
 
     /**
-     * @expectedException \Lindelius\JWT\Exception\ExpiredJwtException
      * @throws \Lindelius\JWT\Exception\InvalidJwtException
+     * @expectedException \Lindelius\JWT\Exception\ExpiredJwtException
      */
     public function testDecodeWithExpOutsideOfLeewayTime()
     {

@@ -9,7 +9,7 @@ use PHPUnit\Framework\TestCase;
  * Class NbfClaimTest
  *
  * @author  Tom Lindelius <tom.lindelius@gmail.com>
- * @version 2018-07-19
+ * @version 2018-07-24
  */
 class NbfClaimTest extends TestCase
 {
@@ -31,8 +31,8 @@ class NbfClaimTest extends TestCase
     }
 
     /**
-     * @expectedException \Lindelius\JWT\Exception\BeforeValidException
      * @throws \Lindelius\JWT\Exception\InvalidJwtException
+     * @expectedException \Lindelius\JWT\Exception\BeforeValidException
      */
     public function testDecodeWithNbfOutsideOfLeewayTime()
     {

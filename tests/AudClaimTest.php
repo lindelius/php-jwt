@@ -49,16 +49,15 @@ class AudClaimTest extends TestCase
     public function testDecodeWithInvalidAudValue($aud)
     {
         $jwt = new JWT('HS256');
+        $jwt->setClaim('aud', $aud);
 
-        $jwt->aud = $aud; // Set an invalid "aud" value
-
-        $jwt->encode('my_key');
-        $jwt->verify('my_key', 'https://myapp.tld');
+        $decodedJwt = JWT::decode($jwt->encode('my_key'));
+        $decodedJwt->verify('my_key', 'https://myapp.tld');
     }
 
     /**
-     * @expectedException \Lindelius\JWT\Exception\InvalidAudienceException
      * @throws \Lindelius\JWT\Exception\InvalidJwtException
+     * @expectedException \Lindelius\JWT\Exception\InvalidAudienceException
      */
     public function testDecodeWithInvalidAudience()
     {
@@ -67,8 +66,8 @@ class AudClaimTest extends TestCase
     }
 
     /**
-     * @expectedException \Lindelius\JWT\Exception\InvalidAudienceException
      * @throws \Lindelius\JWT\Exception\InvalidJwtException
+     * @expectedException \Lindelius\JWT\Exception\InvalidAudienceException
      */
     public function testDecodeWithInvalidAudienceAmongSeveral()
     {

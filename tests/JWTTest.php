@@ -10,7 +10,7 @@ use PHPUnit\Framework\TestCase;
  * Class JWTTest
  *
  * @author  Tom Lindelius <tom.lindelius@gmail.com>
- * @version 2018-07-19
+ * @version 2018-07-24
  */
 class JWTTest extends TestCase
 {
@@ -26,9 +26,9 @@ class JWTTest extends TestCase
     }
 
     /**
+     * @throws \Lindelius\JWT\Exception\InvalidJwtException
      * @expectedException \Lindelius\Jwt\Exception\DomainException
      * @expectedExceptionMessage Unsupported hashing algorithm.
-     * @throws \Lindelius\JWT\Exception\InvalidJwtException
      */
     public function testDecodeWithUnsupportedAlgorithm()
     {
@@ -45,9 +45,9 @@ class JWTTest extends TestCase
     }
 
     /**
+     * @throws \Lindelius\JWT\Exception\InvalidJwtException
      * @expectedException \Lindelius\Jwt\Exception\DomainException
      * @expectedExceptionMessage Disallowed hashing algorithm.
-     * @throws \Lindelius\JWT\Exception\InvalidJwtException
      */
     public function testDecodeWithDisallowedAlgorithm()
     {
@@ -91,9 +91,9 @@ class JWTTest extends TestCase
     }
 
     /**
+     * @throws \Lindelius\JWT\Exception\InvalidJwtException
      * @expectedException \Lindelius\JWT\Exception\InvalidArgumentException
      * @expectedExceptionMessage Invalid hashing algorithm.
-     * @throws \Lindelius\JWT\Exception\InvalidJwtException
      */
     public function testDecodeWithInvalidAlgorithm()
     {
@@ -101,11 +101,11 @@ class JWTTest extends TestCase
     }
 
     /**
-     * @param mixed $hash
+     * @param  mixed $hash
+     * @throws \Lindelius\JWT\Exception\InvalidJwtException
      * @expectedException \Lindelius\JWT\Exception\InvalidArgumentException
      * @expectedExceptionMessage Invalid JWT.
      * @dataProvider             invalidHashProvider
-     * @throws \Lindelius\JWT\Exception\InvalidJwtException
      */
     public function testDecodeWithInvalidHash($hash)
     {
@@ -259,8 +259,8 @@ class JWTTest extends TestCase
     }
 
     /**
-     * @expectedException \Lindelius\JWT\Exception\InvalidSignatureException
      * @throws \Lindelius\JWT\Exception\InvalidJwtException
+     * @expectedException \Lindelius\JWT\Exception\InvalidSignatureException
      */
     public function testDecodeAndVerifyWithInvalidSignature()
     {
@@ -269,9 +269,9 @@ class JWTTest extends TestCase
     }
 
     /**
+     * @throws \Lindelius\JWT\Exception\InvalidJwtException
      * @expectedException \Lindelius\JWT\Exception\JsonException
      * @expectedExceptionMessage Unable to decode the given JSON string
-     * @throws \Lindelius\JWT\Exception\InvalidJwtException
      */
     public function testDecodeTokenWithInvalidJson()
     {
@@ -295,8 +295,8 @@ class JWTTest extends TestCase
             $claims[$claim] = $value;
         }
 
-        $this->assertEquals($jwt->a, @$claims['a']);
-        $this->assertEquals($jwt->b, @$claims['b']);
-        $this->assertEquals($jwt->c, @$claims['c']);
+        $this->assertEquals($jwt->a, $claims['a'] ?? 'missing_value');
+        $this->assertEquals($jwt->b, $claims['b'] ?? 'missing_value');
+        $this->assertEquals($jwt->c, $claims['c'] ?? 'missing_value');
     }
 }
