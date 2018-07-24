@@ -567,7 +567,7 @@ class JWT implements Iterator
             $signature
         );
 
-        foreach ((array) $payload as $claim => $value) {
+        foreach ($payload as $claim => $value) {
             $jwt->{$claim} = $value;
         }
 
