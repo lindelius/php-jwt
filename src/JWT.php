@@ -19,7 +19,7 @@ use Lindelius\JWT\Exception\RuntimeException;
  * Class JWT
  *
  * @author  Tom Lindelius <tom.lindelius@gmail.com>
- * @version 2018-07-19
+ * @version 2018-07-24
  */
 class JWT implements Iterator
 {
