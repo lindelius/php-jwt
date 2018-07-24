@@ -532,22 +532,42 @@ class JWT implements Iterator
     /**
      * Creates a new JWT instance.
      *
-     * @param  array       $header
-     * @param  array       $payload
-     * @param  string|null $signature
+     * @param  array|object $header
+     * @param  array|object $payload
+     * @param  string|null  $signature
      * @return static
      * @throws DomainException
      * @throws InvalidArgumentException
      */
-    public static function create(array $header = [], array $payload = [], $signature = null)
+    public static function create($header = [], $payload = [], $signature = null)
     {
+        /**
+         * Make sure that both the header and the payload are given as either
+         * arrays or objects, and, if they are objects, that they are converted
+         * into associative arrays.
+         */
+        if (!is_array($header) && !is_object($header)) {
+            throw new InvalidArgumentException('Invalid JWT header.');
+        } else {
+            $header = (array) $header;
+        }
+
+        if (!is_array($payload) && !is_object($payload)) {
+            throw new InvalidArgumentException('Invalid JWT payload.');
+        } else {
+            $payload = (array) $payload;
+        }
+
+        /**
+         * Create, populate, and then return the resulting JWT object.
+         */
         $jwt = new static(
             isset($header['alg']) ? $header['alg'] : null,
             $header,
             $signature
         );
 
-        foreach ($payload as $claim => $value) {
+        foreach ((array) $payload as $claim => $value) {
             $jwt->{$claim} = $value;
         }
 
@@ -652,7 +672,7 @@ class JWT implements Iterator
      */
     protected static function jsonDecode($json)
     {
-        $data  = json_decode($json, true);
+        $data  = json_decode($json);
         $error = json_last_error();
 
         if ($error !== JSON_ERROR_NONE) {
