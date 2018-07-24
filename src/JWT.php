@@ -471,16 +471,20 @@ class JWT implements Iterator
         /**
          * Validate the audience constraint, if included.
          */
-        if (!empty($this->aud)) {
+        if (isset($this->aud)) {
             /**
              * Make sure that the value of the audience claim is either a string
              * or an array of strings.
              */
             if (is_array($this->aud)) {
-                foreach ($this->aud as $aud) {
-                    if (!is_string($aud)) {
+                $expectedKey = 0;
+
+                foreach ($this->aud as $key => $aud) {
+                    if ($key !== $expectedKey || !is_string($aud)) {
                         throw new InvalidJwtException('Invalid "aud" value.');
                     }
+
+                    $expectedKey++;
                 }
 
                 $validAudiences = $this->aud;
