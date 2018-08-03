@@ -8,9 +8,6 @@ use PHPUnit\Framework\TestCase;
 
 /**
  * Class JWTTest
- *
- * @author  Tom Lindelius <tom.lindelius@gmail.com>
- * @version 2018-07-24
  */
 class JWTTest extends TestCase
 {

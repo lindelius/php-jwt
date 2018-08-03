@@ -7,7 +7,8 @@
     "authors": [
         {
             "name": "Tom Lindelius",
-            "email": "tom.lindelius@gmail.com"
+            "homepage": "https://lindelius.com",
+            "role": "Developer"
         }
     ],
     "require": {

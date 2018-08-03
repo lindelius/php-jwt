@@ -6,9 +6,6 @@ use Lindelius\JWT\JWT;
 
 /**
  * Class RestrictedAlgorithmsJWT
- *
- * @author  Tom Lindelius <tom.lindelius@gmail.com>
- * @version 2018-07-19
  */
 class RestrictedAlgorithmsJWT extends JWT
 {

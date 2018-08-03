@@ -7,9 +7,6 @@ use PHPUnit\Framework\TestCase;
 
 /**
  * Class ExpClaimTest
- *
- * @author  Tom Lindelius <tom.lindelius@gmail.com>
- * @version 2018-07-24
  */
 class ExpClaimTest extends TestCase
 {

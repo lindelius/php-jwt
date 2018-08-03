@@ -4,9 +4,6 @@ namespace Lindelius\JWT\Tests;
 
 /**
  * Trait TestDataProviders
- *
- * @author  Tom Lindelius <tom.lindelius@gmail.com>
- * @version 2018-06-16
  */
 trait TestDataProviders
 {

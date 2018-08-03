@@ -17,9 +17,6 @@ use Lindelius\JWT\Exception\RuntimeException;
 
 /**
  * Class JWT
- *
- * @author  Tom Lindelius <tom.lindelius@gmail.com>
- * @version 2018-07-24
  */
 class JWT implements Iterator
 {
@@ -39,7 +36,7 @@ class JWT implements Iterator
     protected static $defaultAlgorithm = 'HS256';
 
     /**
-     * Leeway time (in seconds) to account for clock skew.
+     * Leeway time (in seconds) to account for clock skew between servers.
      *
      * @var int
      */
@@ -129,7 +126,7 @@ class JWT implements Iterator
         $this->signature = $signature;
 
         /**
-         * Make sure the JWT's header include the required fields.
+         * Make sure the JWT's header include all of the required fields.
          */
         unset($header['alg']);
         $this->header = array_merge(
@@ -178,7 +175,7 @@ class JWT implements Iterator
     }
 
     /**
-     * Convert the JWT to its string representation.
+     * Convert the JWT to its string representation, i.e. return its hash.
      *
      * @return string
      */
@@ -293,7 +290,7 @@ class JWT implements Iterator
     }
 
     /**
-     * Gets the JWT hash.
+     * Gets the JWT's hash.
      *
      * @return string|null
      */
@@ -303,7 +300,7 @@ class JWT implements Iterator
     }
 
     /**
-     * Gets the JWT header.
+     * Gets the JWT's header.
      *
      * @return array
      */
@@ -328,7 +325,7 @@ class JWT implements Iterator
     }
 
     /**
-     * Gets the JWT payload.
+     * Gets the JWT's payload.
      *
      * @return array
      */
@@ -686,7 +683,7 @@ class JWT implements Iterator
     }
 
     /**
-     * Encodes the given data to a JSON string.
+     * Converts the given data to its JSON representation.
      *
      * @param  mixed $data
      * @return string

@@ -7,9 +7,6 @@ use PHPUnit\Framework\TestCase;
 
 /**
  * Class NbfClaimTest
- *
- * @author  Tom Lindelius <tom.lindelius@gmail.com>
- * @version 2018-07-24
  */
 class NbfClaimTest extends TestCase
 {

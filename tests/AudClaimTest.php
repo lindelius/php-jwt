@@ -7,9 +7,6 @@ use PHPUnit\Framework\TestCase;
 
 /**
  * Class AudClaimTest
- *
- * @author  Tom Lindelius <tom.lindelius@gmail.com>
- * @version 2018-07-24
  */
 class AudClaimTest extends TestCase
 {
