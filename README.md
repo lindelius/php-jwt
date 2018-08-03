@@ -18,6 +18,7 @@ This library conforms to [RFC 7519](https://tools.ietf.org/html/rfc7519), with t
         - [Leeway Time](#leeway-time)
         - [Multiple Encryption Keys](#multiple-encryption-keys)
     - [Exceptions](#exceptions)
+- [Performance](#performance)
 
 ## Installation
 
@@ -156,6 +157,7 @@ This library throws a variety of different exceptions in order to allow for diff
 
 ```php
 try {
+
     $jwt = new \Lindelius\JWT\JWT();
 
     $jwt->exp = time() + (60 * 60 * 2); // expire after 2 hours
@@ -163,7 +165,21 @@ try {
     $jwt->sub = $user->id;
 
     $accessToken = $jwt->encode(ENCODE_KEY);
+
 } catch (\Lindelius\JWT\Exception\Exception $exception) {
     // This catches any exception thrown by the JWT library
 }
 ```
+
+## Performance
+
+The following execution times were posted by the included `performance.php` script (100,000 iterations) on a [t2.small AWS EC2 instance](https://aws.amazon.com/ec2/instance-types/) running Ubuntu 16.04 and PHP 7.2.
+
+| Algorithm |  Encoding  |  Decoding  |
+| :-------: | :--------: | :--------: |
+|   HS256   |  0.0088 ms |  0.0148 ms |
+|   HS384   |  0.0088 ms |  0.0149 ms |
+|   HS512   |  0.0089 ms |  0.0152 ms |
+|   RS256   |  1.5571 ms |  0.0781 ms |
+|   RS384   |  1.5572 ms |  0.0782 ms |
+|   RS512   |  1.5573 ms |  0.0785 ms |
