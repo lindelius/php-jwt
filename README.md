@@ -6,7 +6,6 @@ This library conforms to [RFC 7519](https://tools.ietf.org/html/rfc7519), with t
 
 ## Requirements
 
-- Composer
 - PHP 5.6, or higher
 
 ## Table of Contents
