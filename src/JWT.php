@@ -128,13 +128,12 @@ class JWT implements Iterator
         /**
          * Make sure the JWT's header include all of the required fields.
          */
-        unset($header['alg']);
         $this->header = array_merge(
+            $header,
             [
                 'typ' => 'JWT',
                 'alg' => $algorithm,
-            ],
-            $header
+            ]
         );
     }
 
