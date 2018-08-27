@@ -615,6 +615,10 @@ class JWT implements Iterator
             throw new InvalidJwtException('Invalid JWT header.');
         }
 
+        if ($header->typ !== 'JWT') {
+            throw new InvalidJwtException('Invalid JWT type.');
+        }
+
         if (empty($payload)) {
             throw new InvalidJwtException('Invalid JWT payload.');
         }
