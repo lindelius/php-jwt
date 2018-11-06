@@ -33,12 +33,8 @@ trait TestDataProviders
     {
         return [
             [['an_array']],
-            [1],
-            [0.07],
             [null],
             [new \stdClass()],
-            [''],
-            [false],
             [curl_init()],
         ];
     }
@@ -52,10 +48,7 @@ trait TestDataProviders
     {
         return [
             [['an_array']],
-            [1],
-            [0.07],
             [new \stdClass()],
-            [false],
             [curl_init()],
         ];
     }

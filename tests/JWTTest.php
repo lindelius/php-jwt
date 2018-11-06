@@ -23,7 +23,7 @@ class JWTTest extends TestCase
     }
 
     /**
-     * @throws \Lindelius\JWT\Exception\InvalidJwtException
+     * @throws \Lindelius\JWT\Exception\Exception
      * @expectedException \Lindelius\Jwt\Exception\DomainException
      * @expectedExceptionMessage Unsupported hashing algorithm.
      */
@@ -42,7 +42,7 @@ class JWTTest extends TestCase
     }
 
     /**
-     * @throws \Lindelius\JWT\Exception\InvalidJwtException
+     * @throws \Lindelius\JWT\Exception\Exception
      * @expectedException \Lindelius\Jwt\Exception\DomainException
      * @expectedExceptionMessage Disallowed hashing algorithm.
      */
@@ -53,6 +53,7 @@ class JWTTest extends TestCase
 
     /**
      * @param mixed $key
+     * @throws \Lindelius\JWT\Exception\Exception
      * @expectedException \Lindelius\JWT\Exception\InvalidJwtException
      * @expectedExceptionMessage Invalid key.
      * @dataProvider             invalidKeyProvider
@@ -65,6 +66,7 @@ class JWTTest extends TestCase
 
     /**
      * @param mixed $key
+     * @throws \Lindelius\JWT\Exception\Exception
      * @expectedException \Lindelius\JWT\Exception\InvalidJwtException
      * @expectedExceptionMessage Invalid key.
      * @dataProvider             invalidKeyProvider
@@ -78,9 +80,9 @@ class JWTTest extends TestCase
 
     /**
      * @param mixed $algorithm
-     * @expectedException \Lindelius\JWT\Exception\InvalidArgumentException
-     * @expectedExceptionMessage Invalid hashing algorithm.
-     * @dataProvider             invalidAlgorithmProvider
+     * @throws \Lindelius\JWT\Exception\Exception
+     * @expectedException \TypeError
+     * @dataProvider invalidAlgorithmProvider
      */
     public function testCreateWithInvalidAlgorithm($algorithm)
     {
@@ -88,9 +90,9 @@ class JWTTest extends TestCase
     }
 
     /**
-     * @throws \Lindelius\JWT\Exception\InvalidJwtException
-     * @expectedException \Lindelius\JWT\Exception\InvalidArgumentException
-     * @expectedExceptionMessage Invalid hashing algorithm.
+     * @throws \Lindelius\JWT\Exception\Exception
+     * @expectedException \Lindelius\JWT\Exception\DomainException
+     * @expectedExceptionMessage Unsupported hashing algorithm.
      */
     public function testDecodeWithInvalidAlgorithm()
     {
@@ -99,10 +101,9 @@ class JWTTest extends TestCase
 
     /**
      * @param  mixed $hash
-     * @throws \Lindelius\JWT\Exception\InvalidJwtException
-     * @expectedException \Lindelius\JWT\Exception\InvalidArgumentException
-     * @expectedExceptionMessage Invalid JWT.
-     * @dataProvider             invalidHashProvider
+     * @throws \Lindelius\JWT\Exception\Exception
+     * @expectedException \TypeError
+     * @dataProvider invalidHashProvider
      */
     public function testDecodeWithInvalidHash($hash)
     {
@@ -134,7 +135,9 @@ class JWTTest extends TestCase
     }
 
     /**
-     * @throws \Lindelius\JWT\Exception\InvalidJwtException
+     * @throws \Lindelius\JWT\Exception\Exception
+     * @throws \RuntimeException
+     * @throws \SebastianBergmann\RecursionContext\Exception
      */
     public function testFullLifeCycleHS256()
     {
@@ -149,7 +152,9 @@ class JWTTest extends TestCase
     }
 
     /**
-     * @throws \Lindelius\JWT\Exception\InvalidJwtException
+     * @throws \Lindelius\JWT\Exception\Exception
+     * @throws \RuntimeException
+     * @throws \SebastianBergmann\RecursionContext\Exception
      */
     public function testFullLifeCycleHS384()
     {
@@ -164,7 +169,9 @@ class JWTTest extends TestCase
     }
 
     /**
-     * @throws \Lindelius\JWT\Exception\InvalidJwtException
+     * @throws \Lindelius\JWT\Exception\Exception
+     * @throws \RuntimeException
+     * @throws \SebastianBergmann\RecursionContext\Exception
      */
     public function testFullLifeCycleHS512()
     {
@@ -179,7 +186,9 @@ class JWTTest extends TestCase
     }
 
     /**
-     * @throws \Lindelius\JWT\Exception\InvalidJwtException
+     * @throws \Lindelius\JWT\Exception\Exception
+     * @throws \RuntimeException
+     * @throws \SebastianBergmann\RecursionContext\Exception
      */
     public function testFullLifeCycleRS256()
     {
@@ -201,7 +210,9 @@ class JWTTest extends TestCase
     }
 
     /**
-     * @throws \Lindelius\JWT\Exception\InvalidJwtException
+     * @throws \Lindelius\JWT\Exception\Exception
+     * @throws \RuntimeException
+     * @throws \SebastianBergmann\RecursionContext\Exception
      */
     public function testFullLifeCycleRS384()
     {
@@ -223,7 +234,9 @@ class JWTTest extends TestCase
     }
 
     /**
-     * @throws \Lindelius\JWT\Exception\InvalidJwtException
+     * @throws \Lindelius\JWT\Exception\Exception
+     * @throws \RuntimeException
+     * @throws \SebastianBergmann\RecursionContext\Exception
      */
     public function testFullLifeCycleRS512()
     {
@@ -245,7 +258,9 @@ class JWTTest extends TestCase
     }
 
     /**
-     * @throws \Lindelius\JWT\Exception\InvalidJwtException
+     * @throws \Lindelius\JWT\Exception\Exception
+     * @throws \RuntimeException
+     * @throws \SebastianBergmann\RecursionContext\Exception
      */
     public function testDecodeAndVerifyWithValidSignature()
     {
@@ -256,7 +271,8 @@ class JWTTest extends TestCase
     }
 
     /**
-     * @throws \Lindelius\JWT\Exception\InvalidJwtException
+     * @throws \Lindelius\JWT\Exception\Exception
+     * @throws \RuntimeException
      * @expectedException \Lindelius\JWT\Exception\InvalidSignatureException
      */
     public function testDecodeAndVerifyWithInvalidSignature()
@@ -266,7 +282,8 @@ class JWTTest extends TestCase
     }
 
     /**
-     * @throws \Lindelius\JWT\Exception\InvalidJwtException
+     * @throws \Lindelius\JWT\Exception\Exception
+     * @throws \RuntimeException
      * @expectedException \Lindelius\JWT\Exception\JsonException
      * @expectedExceptionMessage Unable to decode the given JSON string
      */
@@ -275,6 +292,11 @@ class JWTTest extends TestCase
         JWT::decode('eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.U29tZXRoaW5nIG90aGVyIHRoYW4gSlNPTg.yQz7d3ZjXJ508tZedOxG3aZPEUVltphXrGFz6lE6Jhk');
     }
 
+    /**
+     * @throws \Lindelius\JWT\Exception\Exception
+     * @throws \RuntimeException
+     * @throws \SebastianBergmann\RecursionContext\Exception
+     */
     public function testIteratorImplementation()
     {
         $jwt = new JWT();

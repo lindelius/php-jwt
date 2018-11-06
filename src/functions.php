@@ -7,7 +7,7 @@ if (!function_exists('url_safe_base64_encode')) {
      * @param  string $input
      * @return string
      */
-    function url_safe_base64_encode($input)
+    function url_safe_base64_encode(string $input): string
     {
         return str_replace('=', '', strtr(base64_encode($input), '+/', '-_'));
     }
@@ -18,9 +18,9 @@ if (!function_exists('url_safe_base64_decode')) {
      * Decodes data encoded with URL-safe Base64.
      *
      * @param  string $input
-     * @return string
+     * @return string|bool
      */
-    function url_safe_base64_decode($input)
+    function url_safe_base64_decode(string $input)
     {
         $remainder = strlen($input) % 4;
 
