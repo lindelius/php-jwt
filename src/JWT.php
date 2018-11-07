@@ -179,8 +179,8 @@ class JWT implements Iterator
      */
     public function __unset(string $claimName): void
     {
-        // If the claim exists, clear the hash since it's no longer valid
         if (array_key_exists($claimName, $this->payload)) {
+            // Clear the hash since it will no longer be valid
             $this->hash = null;
         }
 
@@ -223,7 +223,7 @@ class JWT implements Iterator
 
         $this->signature = null;
 
-        // Find which algorithm to use when signing the JWT
+        // Find which method to use when signing the JWT
         [$function, $algorithm] = static::$supportedAlgorithms[$this->algorithm];
 
         if ($function === 'hash_hmac') {
@@ -419,7 +419,7 @@ class JWT implements Iterator
 
         $verified = false;
 
-        // Find which algorithm to use when verifying the signature
+        // Find which method to use when verifying the signature
         [$function, $algorithm] = static::$supportedAlgorithms[$this->algorithm];
 
         if ($function === 'hash_hmac') {
@@ -466,12 +466,12 @@ class JWT implements Iterator
             }
         }
 
-        // Validate the "not before" time constraint, if included
-        if (isset($this->nbf)) {
-            if (!is_numeric($this->nbf)) {
-                throw new InvalidJwtException('Invalid "nbf" value.');
-            } elseif ((time() + static::$leeway) < (float) $this->nbf) {
-                throw new BeforeValidException('The JWT is not yet valid.');
+        // Validate the "expires at" time constraint, if included
+        if (isset($this->exp)) {
+            if (!is_numeric($this->exp)) {
+                throw new InvalidJwtException('Invalic "exp" value.');
+            } elseif ((time() - static::$leeway) >= (float) $this->exp) {
+                throw new ExpiredJwtException('The JWT has expired.');
             }
         }
 
@@ -484,12 +484,12 @@ class JWT implements Iterator
             }
         }
 
-        // Validate the "expires at" time constraint, if included
-        if (isset($this->exp)) {
-            if (!is_numeric($this->exp)) {
-                throw new InvalidJwtException('Invalic "exp" value.');
-            } elseif ((time() - static::$leeway) >= (float) $this->exp) {
-                throw new ExpiredJwtException('The JWT has expired.');
+        // Validate the "not before" time constraint, if included
+        if (isset($this->nbf)) {
+            if (!is_numeric($this->nbf)) {
+                throw new InvalidJwtException('Invalid "nbf" value.');
+            } elseif ((time() + static::$leeway) < (float) $this->nbf) {
+                throw new BeforeValidException('The JWT is not yet valid.');
             }
         }
 

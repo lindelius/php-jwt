@@ -2,11 +2,17 @@
 
 A convenience library for working with JSON Web Tokens (JWT) in PHP.
 
-This library conforms to [RFC 7519](https://tools.ietf.org/html/rfc7519), with the exception of not allowing unsigned JWTs (the "none" algorithm).
+This library conforms to [RFC 7519](https://tools.ietf.org/html/rfc7519), with the exception of not allowing unsigned JWTs (the "none" algorithm), and has built-in support for the following claims:
+
+- `aud` - The audience(s) for which the token is valid
+- `exp` - The token's expiration date
+- `iat` - The token's issue date 
+- `nbf` - The token's "not before" date
 
 ## Requirements
 
-- PHP 5.6, or higher
+- PHP 7.1
+- OpenSSL PHP extension (for certain algorithms)
 
 ## Table of Contents
 
@@ -25,7 +31,7 @@ This library conforms to [RFC 7519](https://tools.ietf.org/html/rfc7519), with t
 In order to install this library, issue the following command from your project's root folder:
 
 ```
-composer require "lindelius/php-jwt=^0.6"
+composer require "lindelius/php-jwt=^0.7"
 ```
 
 ## Usage
@@ -167,7 +173,7 @@ try {
     $accessToken = $jwt->encode(ENCODE_KEY);
 
 } catch (\Lindelius\JWT\Exception\Exception $exception) {
-    // This catches any exception thrown by the JWT library
+    // This catches any exception thrown by the library
 }
 ```
 
