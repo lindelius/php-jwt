@@ -2,12 +2,10 @@
 
 namespace Lindelius\JWT\Tests\JWT;
 
-use Lindelius\JWT\JWT;
-
 /**
  * Class LeewayJWT
  */
-class LeewayJWT extends JWT
+class LeewayJWT extends TestJWT
 {
     /**
      * Leeway time (in seconds) to account for clock skew.
