@@ -8,13 +8,13 @@ namespace Lindelius\JWT\Algorithm\HMAC;
 trait HS256
 {
     /**
-     * Encodes the given data with a given key.
+     * Encodes given data using a given key.
      *
      * @param  string $data
      * @param  mixed  $key
      * @return string|null
      */
-    protected function encodeHS256(string $data, $key): ?string
+    protected function encodeWithHS256(string $data, $key): ?string
     {
         return hash_hmac('SHA256', $data, $key, true);
     }
@@ -27,12 +27,8 @@ trait HS256
      * @param  mixed  $key
      * @return bool
      */
-    protected function verifyHS256(string $signature, string $data, $key): bool
+    protected function verifyWithHS256(string $signature, string $data, $key): bool
     {
-        if (hash_equals($signature, hash_hmac('SHA256', $data, $key, true))) {
-            return true;
-        }
-
-        return false;
+        return hash_equals($signature, hash_hmac('SHA256', $data, $key, true));
     }
 }

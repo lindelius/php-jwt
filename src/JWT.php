@@ -180,12 +180,12 @@ abstract class JWT implements Iterator
         // Sign the JWT with the given key
         $dataToSign = implode('.', $segments);
 
-        if (!method_exists($this, 'encode' . $this->algorithm)) {
+        if (!method_exists($this, 'encodeWith' . $this->algorithm)) {
             throw new DomainException('Unsupported hashing algorithm.');
         }
 
         $this->signature = call_user_func_array(
-            [$this, 'encode' . $this->algorithm],
+            [$this, 'encodeWith' . $this->algorithm],
             [$dataToSign, $key]
         );
 
@@ -370,12 +370,12 @@ abstract class JWT implements Iterator
             url_safe_base64_encode(static::jsonEncode($this->getPayload()))
         );
 
-        if (!method_exists($this, 'verify' . $this->algorithm)) {
+        if (!method_exists($this, 'verifyWith' . $this->algorithm)) {
             throw new DomainException('Unsupported hashing algorithm.');
         }
 
         $verified = call_user_func_array(
-            [$this, 'verify' . $this->algorithm],
+            [$this, 'verifyWith' . $this->algorithm],
             [$this->signature, $dataToSign, $key]
         );
 

@@ -8,13 +8,13 @@ namespace Lindelius\JWT\Algorithm\RSA;
 trait RS512
 {
     /**
-     * Encodes the given data with a given key.
+     * Encodes given data using a given key.
      *
      * @param  string $data
      * @param  mixed  $key
      * @return string|null
      */
-    protected function encodeRS512(string $data, $key): ?string
+    protected function encodeWithRS512(string $data, $key): ?string
     {
         $signature = null;
 
@@ -31,12 +31,8 @@ trait RS512
      * @param  mixed  $key
      * @return bool
      */
-    protected function verifyRS512(string $signature, string $data, $key): bool
+    protected function verifyWithRS512(string $signature, string $data, $key): bool
     {
-        if (openssl_verify($data, $signature, $key, 'SHA512') === 1) {
-            return true;
-        }
-
-        return false;
+        return openssl_verify($data, $signature, $key, 'SHA512') === 1;
     }
 }

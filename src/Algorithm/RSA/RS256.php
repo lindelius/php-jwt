@@ -8,13 +8,13 @@ namespace Lindelius\JWT\Algorithm\RSA;
 trait RS256
 {
     /**
-     * Encodes the given data with a given key.
+     * Encodes given data using a given key.
      *
      * @param  string $data
      * @param  mixed  $key
      * @return string|null
      */
-    protected function encodeRS256(string $data, $key): ?string
+    protected function encodeWithRS256(string $data, $key): ?string
     {
         $signature = null;
 
@@ -31,12 +31,8 @@ trait RS256
      * @param  mixed  $key
      * @return bool
      */
-    protected function verifyRS256(string $signature, string $data, $key): bool
+    protected function verifyWithRS256(string $signature, string $data, $key): bool
     {
-        if (openssl_verify($data, $signature, $key, 'SHA256') === 1) {
-            return true;
-        }
-
-        return false;
+        return openssl_verify($data, $signature, $key, 'SHA256') === 1;
     }
 }
