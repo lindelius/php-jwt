@@ -8,6 +8,9 @@ use Lindelius\JWT\Algorithm\HMAC\HS512;
 use Lindelius\JWT\Algorithm\RSA\RS256;
 use Lindelius\JWT\Algorithm\RSA\RS384;
 use Lindelius\JWT\Algorithm\RSA\RS512;
+use Lindelius\JWT\Algorithm\ES\ES256;
+use Lindelius\JWT\Algorithm\ES\ES384;
+use Lindelius\JWT\Algorithm\ES\ES512;
 use Lindelius\JWT\JWT;
 
 /**
@@ -15,5 +18,5 @@ use Lindelius\JWT\JWT;
  */
 class TestJWT extends JWT
 {
-    use HS256, HS384, HS512, RS256, RS384, RS512;
+    use HS256, HS384, HS512, RS256, RS384, RS512, ES256, ES384, ES512;
 }
