@@ -31,7 +31,7 @@ This library conforms to [RFC 7519](https://tools.ietf.org/html/rfc7519), with t
 In order to install this library, issue the following command from your project's root folder:
 
 ```
-composer require "lindelius/php-jwt=^0.7"
+composer require "lindelius/php-jwt=^0.8"
 ```
 
 ## Usage
@@ -72,16 +72,7 @@ $decodedJwt->verify(DECODE_KEY);
 
 #### Algorithm Choices
 
-If you would like to use an algorithm other than "HS256", which is used in the `StandardJWT` model, you may extend the abstract `JWT` model and make use of any of the other included algorithms.
-
-```php
-class MyJWT extends \Lindelius\JWT\JWT
-{
-    use RS512;
-}
-```
-
-The following algorithms are currently included with the library:
+If you would like to use an algorithm other than "HS256", which is used in the `StandardJWT` model, you may extend the abstract `JWT` model and make use of any of the following algorithms:
 
 - HS256
 - HS384
@@ -90,7 +81,14 @@ The following algorithms are currently included with the library:
 - RS384
 - RS512
 
-If you would like to use an algorithm that is not yet supported you can easily implement it yourself by creating the required "encodeWith" and "verifyWith" methods. Please see the included algorithm traits for implementation details.
+```php
+class MyJWT extends \Lindelius\JWT\JWT
+{
+    use \Lindelius\JWT\Algorithm\RSA\RS512;
+}
+```
+
+If you would like to use an algorithm that is not yet supported by the library you can easily implement it yourself by creating the required "encodeWith" and "verifyWith" methods. Please see the included algorithm traits for implementation details.
 
 If you do end up implementing support for an algorithm that is not yet supported by the library, please concider creating a PR so that others can benefit from it, as well.
 
