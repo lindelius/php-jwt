@@ -8,27 +8,27 @@ namespace Lindelius\JWT\Algorithm\HMAC;
 trait HS512
 {
     /**
-     * Encodes given data using a given key.
+     * Encode given data using a given key.
      *
-     * @param  string $data
      * @param  mixed  $key
+     * @param  string $dataToSign
      * @return string|null
      */
-    protected function encodeWithHS512(string $data, $key): ?string
+    protected function encodeWithHS512($key, string $dataToSign): ?string
     {
-        return hash_hmac('SHA512', $data, $key, true);
+        return hash_hmac('SHA512', $dataToSign, $key, true);
     }
 
     /**
-     * Verifies a given signature.
+     * Verify a given signature using a given key.
      *
-     * @param  string $signature
-     * @param  string $data
      * @param  mixed  $key
+     * @param  string $dataToSign
+     * @param  string $signature
      * @return bool
      */
-    protected function verifyWithHS512(string $signature, string $data, $key): bool
+    protected function verifyWithHS512($key, string $dataToSign, string $signature): bool
     {
-        return hash_equals($signature, hash_hmac('SHA512', $data, $key, true));
+        return hash_equals($signature, $this->encodeWithHS512($key, $dataToSign));
     }
 }

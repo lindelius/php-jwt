@@ -428,7 +428,7 @@ abstract class JWT implements Iterator
 
         $signature = call_user_func_array(
             [$this, $method],
-            [$dataToSign, $key]
+            [$key, $dataToSign]
         );
 
         if (!is_string($signature) || empty($signature)) {
@@ -462,7 +462,7 @@ abstract class JWT implements Iterator
 
         $verified = call_user_func_array(
             [$this, $method],
-            [$this->signature, $dataToSign, $key]
+            [$key, $dataToSign, $this->signature]
         );
 
         if (!is_bool($verified)) {
