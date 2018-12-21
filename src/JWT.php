@@ -160,16 +160,11 @@ abstract class JWT implements Iterator
      * @param  mixed $key
      * @return string
      * @throws DomainException
-     * @throws InvalidKeyException
      * @throws JsonException
      * @throws RuntimeException
      */
     public function encode($key): string
     {
-        if (empty($key) || (!is_string($key) && !is_resource($key))) {
-            throw new InvalidKeyException('Invalid key.');
-        }
-
         $segments = [];
 
         // Build the JWT's main segments
@@ -338,10 +333,6 @@ abstract class JWT implements Iterator
             }
         }
 
-        if (empty($key) || (!is_string($key) && !is_resource($key))) {
-            throw new InvalidKeyException('Invalid key.');
-        }
-
         // Verify the signature
         $dataToSign = sprintf(
             '%s.%s',
@@ -357,14 +348,14 @@ abstract class JWT implements Iterator
         if (isset($this->aud)) {
             // Make sure the audience claim is set to a valid value
             if (is_array($this->aud)) {
-                $expectedKey = 0;
+                $expectedIndex = 0;
 
-                foreach ($this->aud as $key => $aud) {
-                    if ($key !== $expectedKey || !is_string($aud)) {
+                foreach ($this->aud as $index => $aud) {
+                    if ($index !== $expectedIndex || !is_string($aud)) {
                         throw new InvalidJwtException('Invalid "aud" value.');
                     }
 
-                    $expectedKey++;
+                    $expectedIndex++;
                 }
 
                 $validAudiences = $this->aud;

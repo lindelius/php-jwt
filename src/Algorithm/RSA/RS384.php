@@ -2,6 +2,8 @@
 
 namespace Lindelius\JWT\Algorithm\RSA;
 
+use Lindelius\JWT\Exception\InvalidKeyException;
+
 /**
  * Trait RS384
  */
@@ -13,9 +15,14 @@ trait RS384
      * @param  mixed  $key
      * @param  string $dataToSign
      * @return string|null
+     * @throws InvalidKeyException
      */
     protected function encodeWithRS384($key, string $dataToSign): ?string
     {
+        if (empty($key) || (!is_string($key) && !is_resource($key))) {
+            throw new InvalidKeyException('Invalid key.');
+        }
+
         $signature = null;
 
         openssl_sign($dataToSign, $signature, $key, 'SHA384');
@@ -30,9 +37,14 @@ trait RS384
      * @param  string $dataToSign
      * @param  string $signature
      * @return bool
+     * @throws InvalidKeyException
      */
     protected function verifyWithRS384($key, string $dataToSign, string $signature): bool
     {
+        if (empty($key) || (!is_string($key) && !is_resource($key))) {
+            throw new InvalidKeyException('Invalid key.');
+        }
+
         return openssl_verify($dataToSign, $signature, $key, 'SHA384') === 1;
     }
 }
