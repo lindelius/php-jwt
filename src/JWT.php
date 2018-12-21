@@ -71,7 +71,7 @@ abstract class JWT implements Iterator
      */
     public function __construct(string $algorithm, array $header = [], ?string $signature = null)
     {
-        $this->algorithm = strtoupper(trim($algorithm));
+        $this->algorithm = $algorithm;
         $this->signature = $signature;
 
         // Make sure the JWT's header include all of the required fields
