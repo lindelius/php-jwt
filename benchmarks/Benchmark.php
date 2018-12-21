@@ -3,7 +3,6 @@
 namespace Lindelius\JWT\Benchmarks;
 
 use Lindelius\JWT\Exception\Exception as JwtException;
-use Lindelius\JWT\JWT;
 
 /**
  * Class Benchmark
@@ -43,7 +42,7 @@ abstract class Benchmark
      */
     public function benchDecode()
     {
-        $decodedJwt = JWT::decode(static::$encodedJwt);
+        $decodedJwt = BenchmarkJWT::decode(static::$encodedJwt);
         $decodedJwt->verify(static::$publicKey, static::$audience);
     }
 
@@ -85,7 +84,7 @@ abstract class Benchmark
      */
     public static function getEncodedJwt($algorithm, $key)
     {
-        $jwt = new JWT($algorithm);
+        $jwt = new BenchmarkJWT($algorithm);
 
         $jwt->aud = static::$audience;
         $jwt->exp = time() + (60 * 20);
