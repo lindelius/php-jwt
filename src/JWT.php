@@ -474,6 +474,7 @@ abstract class JWT implements Iterator
      * @param  string|null  $signature
      * @return static
      * @throws InvalidArgumentException
+     * @throws InvalidJwtException
      */
     public static function create($header = [], $payload = [], ?string $signature = null)
     {
@@ -481,6 +482,10 @@ abstract class JWT implements Iterator
             throw new InvalidArgumentException('Invalid JWT header.');
         } else {
             $header = (array) $header;
+        }
+
+        if (isset($header['typ']) && $header['typ'] !== 'JWT') {
+            throw new InvalidJwtException('Invalid JWT type.');
         }
 
         if (!is_array($payload) && !is_object($payload)) {
@@ -533,19 +538,12 @@ abstract class JWT implements Iterator
             throw new InvalidJwtException('Invalid signature encoding.');
         }
 
-        $header  = static::jsonDecode($decodedHeader);
-        $payload = static::jsonDecode($decodedPayload);
-
         // Validate the decoded values
-        if (empty($header)) {
+        if (empty($header = static::jsonDecode($decodedHeader))) {
             throw new InvalidJwtException('Invalid JWT header.');
         }
 
-        if ($header->typ !== 'JWT') {
-            throw new InvalidJwtException('Invalid JWT type.');
-        }
-
-        if (empty($payload)) {
+        if (empty($payload = static::jsonDecode($decodedPayload))) {
             throw new InvalidJwtException('Invalid JWT payload.');
         }
 
