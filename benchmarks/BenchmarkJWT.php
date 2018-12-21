@@ -2,13 +2,13 @@
 
 namespace Lindelius\JWT\Benchmarks;
 
-use Lindelius\JWT\JWT;
 use Lindelius\JWT\Algorithm\HMAC\HS256;
 use Lindelius\JWT\Algorithm\HMAC\HS384;
 use Lindelius\JWT\Algorithm\HMAC\HS512;
 use Lindelius\JWT\Algorithm\RSA\RS256;
 use Lindelius\JWT\Algorithm\RSA\RS384;
 use Lindelius\JWT\Algorithm\RSA\RS512;
+use Lindelius\JWT\JWT;
 
 /**
  * Class BenchmarkJWT

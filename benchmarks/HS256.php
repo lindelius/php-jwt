@@ -20,13 +20,14 @@ class HS256 extends Benchmark
     public static $algorithm = 'HS256';
 
     /**
+     * Initialize the benchmark.
+     *
+     * @return void
      * @throws JwtException
      */
-    public function init()
+    public function init(): void
     {
-        /**
-         * Set HMAC keys to use when benchmarking.
-         */
+        // Set HMAC keys to use when benchmarking
         if (empty(static::$privateKey) || empty(static::$publicKey)) {
             static::$privateKey = 'MySuperSecretEncryptionKey';
             static::$publicKey  = 'MySuperSecretEncryptionKey';
