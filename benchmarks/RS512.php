@@ -20,13 +20,14 @@ class RS512 extends Benchmark
     public static $algorithm = 'RS512';
 
     /**
+     * Initialize the benchmark.
+     *
+     * @return void
      * @throws JwtException
      */
-    public function init()
+    public function init(): void
     {
-        /**
-         * Generate RSA keys to use when benchmarking.
-         */
+        // Generate RSA keys to use when benchmarking
         if (empty(static::$privateKey) || empty(static::$publicKey)) {
             $resource = openssl_pkey_new();
 

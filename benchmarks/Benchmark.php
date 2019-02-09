@@ -3,7 +3,6 @@
 namespace Lindelius\JWT\Benchmarks;
 
 use Lindelius\JWT\Exception\Exception as JwtException;
-use Lindelius\JWT\JWT;
 
 /**
  * Class Benchmark
@@ -36,37 +35,37 @@ abstract class Benchmark
     public static $privateKey;
 
     /**
-     * Benchmarks the decoding process.
+     * Benchmark the decoding process.
      *
      * @return void
      * @throws JwtException
      */
-    public function benchDecode()
+    public function benchDecode(): void
     {
-        $decodedJwt = JWT::decode(static::$encodedJwt);
+        $decodedJwt = BenchmarkJWT::decode(static::$encodedJwt);
         $decodedJwt->verify(static::$publicKey, static::$audience);
     }
 
     /**
-     * Benchmarks the encoding process.
+     * Benchmark the encoding process.
      *
      * @return void
      * @throws JwtException
      */
-    public function benchEncode()
+    public function benchEncode(): void
     {
         static::getEncodedJwt(static::$algorithm, static::$privateKey);
     }
 
     /**
+     * Initialize the benchmark.
+     *
      * @return void
      * @throws JwtException
      */
-    public function init()
+    public function init(): void
     {
-        /**
-         * Create an encoded JWT to use when benchmarking the decoding process.
-         */
+        // Create an encoded JWT to use when benchmarking the decoding process
         if (empty(static::$encodedJwt)) {
             static::$encodedJwt = static::getEncodedJwt(
                 static::$algorithm,
@@ -76,16 +75,16 @@ abstract class Benchmark
     }
 
     /**
-     * Creates and encodes a JWT using a given algorithm and a given key.
+     * Create and encode a JWT using a given algorithm and a given key.
      *
      * @param  string $algorithm
      * @param  string $key
      * @return string
      * @throws JwtException
      */
-    public static function getEncodedJwt($algorithm, $key)
+    public static function getEncodedJwt($algorithm, $key): string
     {
-        $jwt = new JWT($algorithm);
+        $jwt = new BenchmarkJWT($algorithm);
 
         $jwt->aud = static::$audience;
         $jwt->exp = time() + (60 * 20);

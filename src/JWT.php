@@ -18,43 +18,14 @@ use Lindelius\JWT\Exception\RuntimeException;
 /**
  * Class JWT
  */
-class JWT implements Iterator
+abstract class JWT implements Iterator
 {
-    /**
-     * The allowed hashing algorithms. If empty, all supported algorithms are
-     * considered allowed.
-     *
-     * @var string[]
-     */
-    protected static $allowedAlgorithms = [];
-
-    /**
-     * The default hashing algorithm.
-     *
-     * @var string
-     */
-    protected static $defaultAlgorithm = 'HS256';
-
     /**
      * Leeway time (in seconds) to account for clock skew between servers.
      *
      * @var int
      */
     protected static $leeway = 0;
-
-    /**
-     * Supported hashing algorithms.
-     *
-     * @var array[]
-     */
-    protected static $supportedAlgorithms = [
-        'HS256' => ['hash_hmac', 'SHA256'],
-        'HS384' => ['hash_hmac', 'SHA384'],
-        'HS512' => ['hash_hmac', 'SHA512'],
-        'RS256' => ['openssl', 'SHA256'],
-        'RS384' => ['openssl', 'SHA384'],
-        'RS512' => ['openssl', 'SHA512'],
-    ];
 
     /**
      * The hashing algorithm to use when encoding the JWT.
@@ -89,31 +60,17 @@ class JWT implements Iterator
      *
      * @var string|null
      */
-    private $signature = null;
+    private $signature;
 
     /**
      * JWT constructor.
      *
-     * @param  string|null $algorithm
-     * @param  array       $header
-     * @param  string|null $signature
-     * @return void
-     * @throws DomainException
+     * @param string      $algorithm
+     * @param array       $header
+     * @param string|null $signature
      */
-    public function __construct(?string $algorithm = null, array $header = [], ?string $signature = null)
+    public function __construct(string $algorithm, array $header = [], ?string $signature = null)
     {
-        if (empty($algorithm)) {
-            $algorithm = static::$defaultAlgorithm;
-        }
-
-        if (!in_array($algorithm, static::getSupportedAlgorithms())) {
-            throw new DomainException('Unsupported hashing algorithm.');
-        }
-
-        if (!in_array($algorithm, static::getAllowedAlgorithms())) {
-            throw new DomainException('Disallowed hashing algorithm.');
-        }
-
         $this->algorithm = $algorithm;
         $this->signature = $signature;
 
@@ -128,7 +85,7 @@ class JWT implements Iterator
     }
 
     /**
-     * Gets the current value for a given claim.
+     * Get the current value for a given claim.
      *
      * @param  string $claim
      * @return mixed
@@ -139,7 +96,7 @@ class JWT implements Iterator
     }
 
     /**
-     * Checks whether a given claim has been set.
+     * Check whether a given claim has been set.
      *
      * @param  string $claim
      * @return bool
@@ -150,7 +107,7 @@ class JWT implements Iterator
     }
 
     /**
-     * Sets a new value for a given claim.
+     * Set a new value for a given claim.
      *
      * @param  string $claim
      * @param  mixed  $value
@@ -172,7 +129,7 @@ class JWT implements Iterator
     }
 
     /**
-     * Unsets a given claim.
+     * Unset a given claim.
      *
      * @param  string $claimName
      * @return void
@@ -188,7 +145,7 @@ class JWT implements Iterator
     }
 
     /**
-     * Gets the value of the "current" claim in the payload array.
+     * Get the value of the "current" claim in the payload array.
      *
      * @return mixed
      */
@@ -198,20 +155,16 @@ class JWT implements Iterator
     }
 
     /**
-     * Encodes the JWT object and returns the resulting hash.
+     * Encode the JWT object and return the resulting hash.
      *
      * @param  mixed $key
      * @return string
-     * @throws InvalidKeyException
+     * @throws DomainException
      * @throws JsonException
      * @throws RuntimeException
      */
     public function encode($key): string
     {
-        if (empty($key) || (!is_string($key) && !is_resource($key))) {
-            throw new InvalidKeyException('Invalid key.');
-        }
-
         $segments = [];
 
         // Build the JWT's main segments
@@ -219,33 +172,15 @@ class JWT implements Iterator
         $segments[] = url_safe_base64_encode(static::jsonEncode($this->payload));
 
         // Sign the JWT with the given key
-        $dataToSign = implode('.', $segments);
+        $segments[] = url_safe_base64_encode(
+            $this->signature = $this->generateSignature($key, implode('.', $segments))
+        );
 
-        $this->signature = null;
-
-        // Find which method to use when signing the JWT
-        [$function, $algorithm] = static::$supportedAlgorithms[$this->algorithm];
-
-        if ($function === 'hash_hmac') {
-            $this->signature = hash_hmac($algorithm, $dataToSign, $key, true);
-        } elseif ($function === 'openssl') {
-            openssl_sign($dataToSign, $this->signature, $key, $algorithm);
-        }
-
-        if (empty($this->signature)) {
-            throw new RuntimeException('Unable to sign the JWT.');
-        }
-
-        $segments[] = url_safe_base64_encode($this->signature);
-
-        // Piece together the segments and return the resulting hash
-        $this->hash = implode('.', $segments);
-
-        return $this->hash;
+        return $this->hash = implode('.', $segments);
     }
 
     /**
-     * Gets the current value of a given claim.
+     * Get the current value of a given claim.
      *
      * @param  string $name
      * @return mixed
@@ -260,18 +195,17 @@ class JWT implements Iterator
     }
 
     /**
-     * Gets the entire set of claims included in the JWT.
+     * Get the entire set of claims included in the JWT.
      *
      * @return array
-     * @see    JWT::getPayload()
      */
     public function getClaims(): array
     {
-        return $this->getPayload();
+        return $this->payload;
     }
 
     /**
-     * Gets the JWT's hash.
+     * Get the JWT's hash, or null if it hasn't been signed.
      *
      * @return string|null
      */
@@ -281,7 +215,7 @@ class JWT implements Iterator
     }
 
     /**
-     * Gets the JWT's header.
+     * Get the JWT's header.
      *
      * @return array
      */
@@ -291,7 +225,7 @@ class JWT implements Iterator
     }
 
     /**
-     * Gets the current value for a given header field.
+     * Get the current value for a given header field.
      *
      * @param  string $name
      * @return mixed
@@ -306,7 +240,7 @@ class JWT implements Iterator
     }
 
     /**
-     * Gets the JWT's payload.
+     * Get the JWT's payload.
      *
      * @return array
      */
@@ -316,7 +250,7 @@ class JWT implements Iterator
     }
 
     /**
-     * Gets the name of the "current" claim in the payload array.
+     * Get the name of the "current" claim in the payload array.
      *
      * @return string|null
      */
@@ -326,7 +260,7 @@ class JWT implements Iterator
     }
 
     /**
-     * Advances the iterator to the "next" claim in the payload array.
+     * Advance the iterator to the "next" claim in the payload array.
      *
      * @return void
      */
@@ -336,7 +270,7 @@ class JWT implements Iterator
     }
 
     /**
-     * Rewinds the payload iterator.
+     * Rewind the payload iterator.
      *
      * @return void
      */
@@ -346,7 +280,7 @@ class JWT implements Iterator
     }
 
     /**
-     * Sets a new value for a given claim.
+     * Set a new value for a given claim.
      *
      * @param  string $name
      * @param  mixed  $value
@@ -361,7 +295,7 @@ class JWT implements Iterator
     }
 
     /**
-     * Checks whether the current position in the payload array is valid.
+     * Check whether the current position in the payload array is valid.
      *
      * @return bool
      */
@@ -371,19 +305,16 @@ class JWT implements Iterator
     }
 
     /**
-     * Verifies that the JWT is correctly formatted and that the given signature
+     * Verify that the JWT is correctly formatted and that the given signature
      * is valid.
      *
      * @param  mixed       $key
      * @param  string|null $audience
      * @return bool
-     * @throws BeforeValidException
-     * @throws ExpiredJwtException
-     * @throws InvalidAudienceException
+     * @throws DomainException
      * @throws InvalidJwtException
-     * @throws InvalidKeyException
-     * @throws InvalidSignatureException
      * @throws JsonException
+     * @throws RuntimeException
      */
     public function verify($key, ?string $audience = null): bool
     {
@@ -402,41 +333,14 @@ class JWT implements Iterator
             }
         }
 
-        if (empty($key) || (!is_string($key) && !is_resource($key))) {
-            throw new InvalidKeyException('Invalid key.');
-        }
-
-        // Verify the given signature
-        if (empty($this->signature)) {
-            throw new InvalidSignatureException('Invalid signature.');
-        }
-
+        // Verify the signature
         $dataToSign = sprintf(
             '%s.%s',
             url_safe_base64_encode(static::jsonEncode($this->getHeader())),
             url_safe_base64_encode(static::jsonEncode($this->getPayload()))
         );
 
-        $verified = false;
-
-        // Find which method to use when verifying the signature
-        [$function, $algorithm] = static::$supportedAlgorithms[$this->algorithm];
-
-        if ($function === 'hash_hmac') {
-            $hash = hash_hmac($algorithm, $dataToSign, $key, true);
-
-            if (hash_equals($this->signature, $hash)) {
-                $verified = true;
-            }
-        } elseif ($function === 'openssl') {
-            $success = openssl_verify($dataToSign, $this->signature, $key, $algorithm);
-
-            if ($success === 1) {
-                $verified = true;
-            }
-        }
-
-        if (!$verified) {
+        if (!$this->verifySignature($key, $dataToSign)) {
             throw new InvalidSignatureException('Invalid JWT signature.');
         }
 
@@ -444,14 +348,14 @@ class JWT implements Iterator
         if (isset($this->aud)) {
             // Make sure the audience claim is set to a valid value
             if (is_array($this->aud)) {
-                $expectedKey = 0;
+                $expectedIndex = 0;
 
-                foreach ($this->aud as $key => $aud) {
-                    if ($key !== $expectedKey || !is_string($aud)) {
+                foreach ($this->aud as $index => $aud) {
+                    if ($index !== $expectedIndex || !is_string($aud)) {
                         throw new InvalidJwtException('Invalid "aud" value.');
                     }
 
-                    $expectedKey++;
+                    $expectedIndex++;
                 }
 
                 $validAudiences = $this->aud;
@@ -497,14 +401,80 @@ class JWT implements Iterator
     }
 
     /**
-     * Creates a new JWT instance.
+     * Generate a signature for the JWT using a given key.
+     *
+     * @param  mixed  $key
+     * @param  string $dataToSign
+     * @return string
+     * @throws DomainException
+     * @throws RuntimeException
+     */
+    protected function generateSignature($key, string $dataToSign): string
+    {
+        $method = 'encodeWith' . $this->algorithm;
+
+        if (!method_exists($this, $method)) {
+            throw new DomainException('Unsupported hashing algorithm.');
+        }
+
+        $signature = call_user_func_array(
+            [$this, $method],
+            [$key, $dataToSign]
+        );
+
+        if (!is_string($signature) || empty($signature)) {
+            throw new RuntimeException('Unable to sign the JWT.');
+        }
+
+        return $signature;
+    }
+
+    /**
+     * Verify the JWT's signature using a given key.
+     *
+     * @param  mixed  $key
+     * @param  string $dataToSign
+     * @return bool
+     * @throws DomainException
+     * @throws InvalidSignatureException
+     * @throws RuntimeException
+     */
+    protected function verifySignature($key, string $dataToSign): bool
+    {
+        if (empty($this->signature)) {
+            throw new InvalidSignatureException('Invalid signature.');
+        }
+
+        $method = 'verifyWith' . $this->algorithm;
+
+        if (!method_exists($this, $method)) {
+            throw new DomainException('Unsupported hashing algorithm.');
+        }
+
+        $verified = call_user_func_array(
+            [$this, $method],
+            [$key, $dataToSign, $this->signature]
+        );
+
+        if (!is_bool($verified)) {
+            throw new RuntimeException(sprintf(
+                'Invalid return value given from "%s".',
+                $method
+            ));
+        }
+
+        return $verified;
+    }
+
+    /**
+     * Create a new JWT from given data.
      *
      * @param  array|object $header
      * @param  array|object $payload
      * @param  string|null  $signature
      * @return static
-     * @throws DomainException
      * @throws InvalidArgumentException
+     * @throws InvalidJwtException
      */
     public static function create($header = [], $payload = [], ?string $signature = null)
     {
@@ -512,6 +482,10 @@ class JWT implements Iterator
             throw new InvalidArgumentException('Invalid JWT header.');
         } else {
             $header = (array) $header;
+        }
+
+        if (isset($header['typ']) && $header['typ'] !== 'JWT') {
+            throw new InvalidJwtException('Invalid JWT type.');
         }
 
         if (!is_array($payload) && !is_object($payload)) {
@@ -535,11 +509,10 @@ class JWT implements Iterator
     }
 
     /**
-     * Decodes a JWT hash and returns the resulting object.
+     * Decode a JWT hash and return the resulting object.
      *
      * @param  string $jwt
      * @return static
-     * @throws DomainException
      * @throws InvalidArgumentException
      * @throws InvalidJwtException
      * @throws JsonException
@@ -565,19 +538,12 @@ class JWT implements Iterator
             throw new InvalidJwtException('Invalid signature encoding.');
         }
 
-        $header  = static::jsonDecode($decodedHeader);
-        $payload = static::jsonDecode($decodedPayload);
-
         // Validate the decoded values
-        if (empty($header)) {
+        if (empty($header = static::jsonDecode($decodedHeader))) {
             throw new InvalidJwtException('Invalid JWT header.');
         }
 
-        if ($header->typ !== 'JWT') {
-            throw new InvalidJwtException('Invalid JWT type.');
-        }
-
-        if (empty($payload)) {
+        if (empty($payload = static::jsonDecode($decodedPayload))) {
             throw new InvalidJwtException('Invalid JWT payload.');
         }
 
@@ -585,21 +551,7 @@ class JWT implements Iterator
     }
 
     /**
-     * Gets the allowed hashing algorithms.
-     *
-     * @return array
-     */
-    public static function getAllowedAlgorithms(): array
-    {
-        if (empty(static::$allowedAlgorithms)) {
-            return static::getSupportedAlgorithms();
-        }
-
-        return static::$allowedAlgorithms;
-    }
-
-    /**
-     * Gets the leeway time (in seconds).
+     * Get the leeway time (in seconds).
      *
      * @return int
      */
@@ -609,17 +561,7 @@ class JWT implements Iterator
     }
 
     /**
-     * Gets the supported hashing algorithms.
-     *
-     * @return array
-     */
-    public static function getSupportedAlgorithms(): array
-    {
-        return array_keys(static::$supportedAlgorithms);
-    }
-
-    /**
-     * Decodes a given JSON string.
+     * Decode a given JSON string.
      *
      * @param  string $json
      * @return mixed
@@ -641,7 +583,7 @@ class JWT implements Iterator
     }
 
     /**
-     * Converts the given data to its JSON representation.
+     * Convert given data to its JSON representation.
      *
      * @param  mixed $data
      * @return string

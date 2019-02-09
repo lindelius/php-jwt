@@ -3,7 +3,7 @@
 namespace Lindelius\JWT\Tests;
 
 use Lindelius\JWT\Tests\JWT\RestrictedAlgorithmsJWT;
-use Lindelius\JWT\JWT;
+use Lindelius\JWT\Tests\JWT\TestJWT;
 use PHPUnit\Framework\TestCase;
 
 /**
@@ -14,12 +14,14 @@ class JWTTest extends TestCase
     use TestDataProviders;
 
     /**
+     * @throws \Lindelius\JWT\Exception\Exception
      * @expectedException \Lindelius\Jwt\Exception\DomainException
      * @expectedExceptionMessage Unsupported hashing algorithm.
      */
     public function testCreateWithUnsupportedAlgorithm()
     {
-        new JWT('ABC123');
+        $jwt = new TestJWT('ABC123');
+        $jwt->encode('my_key');
     }
 
     /**
@@ -29,26 +31,8 @@ class JWTTest extends TestCase
      */
     public function testDecodeWithUnsupportedAlgorithm()
     {
-        JWT::decode('eyJ0eXAiOiJKV1QiLCJhbGciOiJBQkMxMjMifQ.eyJzb21lX2ZpZWxkIjoiYW55X3ZhbHVlIn0.92nuM1zI5H8lARijnJS_NOEe1at9C38kxJxpgHc9D6Q');
-    }
-
-    /**
-     * @expectedException \Lindelius\Jwt\Exception\DomainException
-     * @expectedExceptionMessage Disallowed hashing algorithm.
-     */
-    public function testCreateWithDisallowedAlgorithm()
-    {
-        new RestrictedAlgorithmsJWT('HS512');
-    }
-
-    /**
-     * @throws \Lindelius\JWT\Exception\Exception
-     * @expectedException \Lindelius\Jwt\Exception\DomainException
-     * @expectedExceptionMessage Disallowed hashing algorithm.
-     */
-    public function testDecodeWithDisallowedAlgorithm()
-    {
-        RestrictedAlgorithmsJWT::decode('eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzUxMiJ9.eyJzb21lX2ZpZWxkIjoiYW55X3ZhbHVlIn0.Up6KufPyr5SQVacgwVRfrcPRg1uav5cMsn2z41XxZ7s');
+        $jwt = TestJWT::decode('eyJ0eXAiOiJKV1QiLCJhbGciOiJBQkMxMjMifQ.eyJzb21lX2ZpZWxkIjoiYW55X3ZhbHVlIn0.92nuM1zI5H8lARijnJS_NOEe1at9C38kxJxpgHc9D6Q');
+        $jwt->verify('my_key');
     }
 
     /**
@@ -60,7 +44,7 @@ class JWTTest extends TestCase
      */
     public function testDecodeWithInvalidKey($key)
     {
-        $decodedJwt = JWT::decode('eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzb21lX2ZpZWxkIjoiYW55X3ZhbHVlIn0.yQz7d3ZjXJ508tZedOxG3aZPEUVltphXrGFz6lE6Jhk');
+        $decodedJwt = TestJWT::decode('eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzb21lX2ZpZWxkIjoiYW55X3ZhbHVlIn0.yQz7d3ZjXJ508tZedOxG3aZPEUVltphXrGFz6lE6Jhk');
         $decodedJwt->verify($key);
     }
 
@@ -73,7 +57,7 @@ class JWTTest extends TestCase
      */
     public function testEncodeWithInvalidKey($key)
     {
-        $jwt = new JWT();
+        $jwt = new TestJWT('HS256');
         $jwt->setClaim('some_field', 'any_value');
         $jwt->encode($key);
     }
@@ -86,7 +70,8 @@ class JWTTest extends TestCase
      */
     public function testCreateWithInvalidAlgorithm($algorithm)
     {
-        new JWT($algorithm);
+        $jwt = new TestJWT($algorithm);
+        $jwt->encode('my_key');
     }
 
     /**
@@ -96,7 +81,8 @@ class JWTTest extends TestCase
      */
     public function testDecodeWithInvalidAlgorithm()
     {
-        JWT::decode('eyJ0eXAiOiJKV1QiLCJhbGciOjEzMzd9.eyJzb21lX2ZpZWxkIjoiYW55X3ZhbHVlIn0.q4UyVTIKIamLj8ZvlaQMO_yUblMXHwJ_k3qgeGzrnO0');
+        $jwt = TestJWT::decode('eyJ0eXAiOiJKV1QiLCJhbGciOjEzMzd9.eyJzb21lX2ZpZWxkIjoiYW55X3ZhbHVlIn0.q4UyVTIKIamLj8ZvlaQMO_yUblMXHwJ_k3qgeGzrnO0');
+        $jwt->verify('my_key');
     }
 
     /**
@@ -107,19 +93,21 @@ class JWTTest extends TestCase
      */
     public function testDecodeWithInvalidHash($hash)
     {
-        JWT::decode($hash);
+        TestJWT::decode($hash);
     }
 
     /**
+     * @throws \Lindelius\JWT\Exception\Exception
      * @expectedException \Lindelius\JWT\Exception\InvalidJwtException
      * @expectedExceptionMessage Unexpected number of JWT segments.
      */
     public function testDecodeMalformedJWT()
     {
-        JWT::decode('eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzb21lX2ZpZWxkIjoiYW55X3ZhbHVlIn0');
+        TestJWT::decode('eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzb21lX2ZpZWxkIjoiYW55X3ZhbHVlIn0');
     }
 
     /**
+     * @throws \Lindelius\JWT\Exception\Exception
      * @expectedException \Lindelius\JWT\Exception\InvalidJwtException
      * @expectedExceptionMessage Invalid key.
      */
@@ -127,10 +115,10 @@ class JWTTest extends TestCase
     {
         $keys = ['correct_kid' => 'my_key'];
 
-        $jwt = new JWT(null, ['kid' => 'wrong_kid']);
+        $jwt = new TestJWT('HS256', ['kid' => 'wrong_kid']);
         $jwt->setClaim('some_field', 'any_value');
 
-        $decodedJwt = JWT::decode($jwt->encode('my_key'));
+        $decodedJwt = TestJWT::decode($jwt->encode('my_key'));
         $decodedJwt->verify($keys);
     }
 
@@ -141,11 +129,11 @@ class JWTTest extends TestCase
      */
     public function testFullLifeCycleHS256()
     {
-        $jwt = new JWT('HS256');
+        $jwt = new TestJWT('HS256');
         $jwt->setClaim('some_field', 'any_value');
         $jwt->encode('my_key');
 
-        $decodedJwt = JWT::decode($jwt->getHash());
+        $decodedJwt = TestJWT::decode($jwt->getHash());
         $decodedJwt->verify('my_key');
 
         $this->assertEquals('any_value', $decodedJwt->getClaim('some_field'));
@@ -158,11 +146,11 @@ class JWTTest extends TestCase
      */
     public function testFullLifeCycleHS384()
     {
-        $jwt = new JWT('HS384');
+        $jwt = new TestJWT('HS384');
         $jwt->setClaim('some_field', 'any_value');
         $jwt->encode('my_key');
 
-        $decodedJwt = JWT::decode($jwt->getHash());
+        $decodedJwt = TestJWT::decode($jwt->getHash());
         $decodedJwt->verify('my_key');
 
         $this->assertEquals('any_value', $decodedJwt->getClaim('some_field'));
@@ -175,11 +163,11 @@ class JWTTest extends TestCase
      */
     public function testFullLifeCycleHS512()
     {
-        $jwt = new JWT('HS512');
+        $jwt = new TestJWT('HS512');
         $jwt->setClaim('some_field', 'any_value');
         $jwt->encode('my_key');
 
-        $decodedJwt = JWT::decode($jwt->getHash());
+        $decodedJwt = TestJWT::decode($jwt->getHash());
         $decodedJwt->verify('my_key');
 
         $this->assertEquals('any_value', $decodedJwt->getClaim('some_field'));
@@ -199,11 +187,11 @@ class JWTTest extends TestCase
 
         $publicKey = openssl_pkey_get_details($resource)['key'];
 
-        $jwt = new JWT('RS256');
+        $jwt = new TestJWT('RS256');
         $jwt->setClaim('some_field', 'any_value');
         $jwt->encode($privateKey);
 
-        $decodedJwt = JWT::decode($jwt->getHash());
+        $decodedJwt = TestJWT::decode($jwt->getHash());
         $decodedJwt->verify($publicKey);
 
         $this->assertEquals('any_value', $decodedJwt->getClaim('some_field'));
@@ -223,11 +211,11 @@ class JWTTest extends TestCase
 
         $publicKey = openssl_pkey_get_details($resource)['key'];
 
-        $jwt = new JWT('RS384');
+        $jwt = new TestJWT('RS384');
         $jwt->setClaim('some_field', 'any_value');
         $jwt->encode($privateKey);
 
-        $decodedJwt = JWT::decode($jwt->getHash());
+        $decodedJwt = TestJWT::decode($jwt->getHash());
         $decodedJwt->verify($publicKey);
 
         $this->assertEquals('any_value', $decodedJwt->getClaim('some_field'));
@@ -247,11 +235,11 @@ class JWTTest extends TestCase
 
         $publicKey = openssl_pkey_get_details($resource)['key'];
 
-        $jwt = new JWT('RS512');
+        $jwt = new TestJWT('RS512');
         $jwt->setClaim('some_field', 'any_value');
         $jwt->encode($privateKey);
 
-        $decodedJwt = JWT::decode($jwt->getHash());
+        $decodedJwt = TestJWT::decode($jwt->getHash());
         $decodedJwt->verify($publicKey);
 
         $this->assertEquals('any_value', $decodedJwt->getClaim('some_field'));
@@ -264,7 +252,7 @@ class JWTTest extends TestCase
      */
     public function testDecodeAndVerifyWithValidSignature()
     {
-        $jwt = JWT::decode('eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzb21lX2ZpZWxkIjoiYW55X3ZhbHVlIn0.yQz7d3ZjXJ508tZedOxG3aZPEUVltphXrGFz6lE6Jhk');
+        $jwt = TestJWT::decode('eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzb21lX2ZpZWxkIjoiYW55X3ZhbHVlIn0.yQz7d3ZjXJ508tZedOxG3aZPEUVltphXrGFz6lE6Jhk');
         $jwt->verify('my_key');
 
         $this->assertEquals('any_value', $jwt->getClaim('some_field'));
@@ -277,7 +265,7 @@ class JWTTest extends TestCase
      */
     public function testDecodeAndVerifyWithInvalidSignature()
     {
-        $jwt = JWT::decode('eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzb21lX2ZpZWxkIjoiYW55X3ZhbHVlIn0.JUKQhsQPFfq8fQMkOmJ2x_w3NrEhVZNcYg52vn-GREE');
+        $jwt = TestJWT::decode('eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzb21lX2ZpZWxkIjoiYW55X3ZhbHVlIn0.JUKQhsQPFfq8fQMkOmJ2x_w3NrEhVZNcYg52vn-GREE');
         $jwt->verify('my_key');
     }
 
@@ -289,17 +277,16 @@ class JWTTest extends TestCase
      */
     public function testDecodeTokenWithInvalidJson()
     {
-        JWT::decode('eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.U29tZXRoaW5nIG90aGVyIHRoYW4gSlNPTg.yQz7d3ZjXJ508tZedOxG3aZPEUVltphXrGFz6lE6Jhk');
+        TestJWT::decode('eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.U29tZXRoaW5nIG90aGVyIHRoYW4gSlNPTg.yQz7d3ZjXJ508tZedOxG3aZPEUVltphXrGFz6lE6Jhk');
     }
 
     /**
-     * @throws \Lindelius\JWT\Exception\Exception
      * @throws \RuntimeException
      * @throws \SebastianBergmann\RecursionContext\Exception
      */
     public function testIteratorImplementation()
     {
-        $jwt = new JWT();
+        $jwt = new TestJWT('HS256');
 
         $jwt->setClaim('a', 1);
         $jwt->setClaim('b', 2);
