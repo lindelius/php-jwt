@@ -90,7 +90,7 @@ class MyJWT extends \Lindelius\JWT\JWT
 
 If you would like to use an algorithm that is not yet supported by the library you can easily implement it yourself by creating the required "encodeWith" and "verifyWith" methods. Please see the included algorithm traits for implementation details.
 
-If you do end up implementing support for an algorithm that is not yet supported by the library, please concider creating a PR so that others can benefit from it, as well.
+If you do end up implementing support for an algorithm that is not yet supported by the library, concider creating a PR for it so that others may benefit from it, as well.
 
 #### Audiences
 
@@ -121,6 +121,8 @@ If there are time differences between your application servers, you can extend t
 ```php
 class MyJWT extends \Lindelius\JWT\JWT
 {
+    use \Lindelius\JWT\Algorithm\HMAC\HS256;
+
     /**
      * Leeway time (in seconds) to account for clock skew.
      *
