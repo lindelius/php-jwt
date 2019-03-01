@@ -14,11 +14,12 @@ class StandardJWT extends JWT
     /**
      * StandardJWT constructor.
      *
+     * @param string      $algorithm
      * @param array       $header
      * @param string|null $signature
      */
-    public function __construct(array $header = [], ?string $signature = null)
+    public function __construct(string $algorithm = 'HS256', array $header = [], ?string $signature = null)
     {
-        parent::__construct('HS256', $header, $signature);
+        parent::__construct($algorithm, $header, $signature);
     }
 }
