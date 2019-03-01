@@ -41,7 +41,7 @@ The following is a very basic example of how to issue JWTs with this library:
 ```php
 $jwt = new \Lindelius\JWT\StandardJWT();
 
-$jwt->exp = time() + (60 * 60 * 2); // expire after 2 hours
+$jwt->exp = time() + (60 * 20); // Expire after 20 minutes
 $jwt->iat = time();
 $jwt->sub = $user->id;
 
@@ -77,15 +77,19 @@ If you would like to use an algorithm other than "HS256", which is used in the `
 - HS256
 - HS384
 - HS512
-- RS256
-- RS384
-- RS512
+- RS256 *(requires the OpenSSL extension)*
+- RS384 *(requires the OpenSSL extension)*
+- RS512 *(requires the OpenSSL extension)*
+
+Do note that you need to specify which algorithm you want to use when you create the JWTs. This may either be done when you instantiate the objects (like in the example below) or by overriding the constructor (like in the `StandardJWT` implementation).
 
 ```php
 class MyJWT extends \Lindelius\JWT\JWT
 {
     use \Lindelius\JWT\Algorithm\RSA\RS512;
 }
+
+$jwt = new MyJWT('RS512');
 ```
 
 If you would like to use an algorithm that is not yet supported by the library you can easily implement it yourself by creating the required "encodeWith" and "verifyWith" methods. Please see the included algorithm traits for implementation details.
