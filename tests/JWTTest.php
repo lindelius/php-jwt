@@ -2,7 +2,6 @@
 
 namespace Lindelius\JWT\Tests;
 
-use Lindelius\JWT\Tests\JWT\RestrictedAlgorithmsJWT;
 use Lindelius\JWT\Tests\JWT\TestJWT;
 use PHPUnit\Framework\TestCase;
 
