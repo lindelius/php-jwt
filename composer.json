@@ -1,7 +1,7 @@
 {
     "name": "lindelius/php-jwt",
     "description": "Convenience library for working with JSON Web Tokens (JWT) in PHP",
-    "keywords": ["php", "jwt", "helpers"],
+    "keywords": ["jwt", "tokens", "json", "json web tokens", "helpers"],
     "homepage": "https://github.com/lindelius/php-jwt",
     "license": "Apache-2.0",
     "authors": [
@@ -16,7 +16,6 @@
         "ext-json": "*"
     },
     "require-dev": {
-        "php": "^7.1",
         "ext-openssl": "*",
         "phpbench/phpbench": "^0.14",
         "phpunit/phpunit": "^7.0"
