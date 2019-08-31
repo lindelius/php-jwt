@@ -3,7 +3,7 @@
 namespace Lindelius\JWT\Exception;
 
 /**
- * Class InvalidAudienceException
+ * An exception thrown when an invalid "audience" value is included with a JWT.
  */
 class InvalidAudienceException extends InvalidJwtException
 {

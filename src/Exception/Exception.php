@@ -3,7 +3,7 @@
 namespace Lindelius\JWT\Exception;
 
 /**
- * Interface Exception
+ * A base interface for JWT releated exceptions.
  */
 interface Exception
 {

@@ -3,7 +3,7 @@
 namespace Lindelius\JWT\Exception;
 
 /**
- * Class InvalidSignatureException
+ * An exception thrown when an invalid signature is detected.
  */
 class InvalidSignatureException extends InvalidJwtException
 {

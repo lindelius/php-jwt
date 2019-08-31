@@ -3,7 +3,7 @@
 namespace Lindelius\JWT\Exception;
 
 /**
- * Class InvalidKeyException
+ * An exception thrown when an invalid encryption or decryption key is detected.
  */
 class InvalidKeyException extends InvalidJwtException
 {

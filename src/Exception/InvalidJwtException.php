@@ -3,7 +3,7 @@
 namespace Lindelius\JWT\Exception;
 
 /**
- * Class InvalidJwtException
+ * An exception thrown when an invalid JWT is detected.
  */
 class InvalidJwtException extends \Exception implements Exception
 {
