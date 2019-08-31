@@ -7,7 +7,7 @@ use Lindelius\JWT\Algorithm\HMAC\HS256;
 /**
  * A standard JWT model implementation.
  */
-class StandardJWT extends JWT
+final class StandardJWT extends JWT
 {
     use HS256;
 
