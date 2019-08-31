@@ -326,9 +326,7 @@ abstract class JWT implements Iterator
 
             if ($kid !== null) {
                 if (!is_string($kid) && !is_numeric($kid)) {
-                    throw new InvalidJwtException(
-                        'Invalid "kid" value. Unable to lookup secret key.'
-                    );
+                    throw new InvalidJwtException('Invalid "kid" value. Unable to lookup secret key.');
                 }
 
                 $key = array_key_exists($kid, $key) ? $key[$kid] : null;
@@ -459,10 +457,7 @@ abstract class JWT implements Iterator
         );
 
         if (!is_bool($verified)) {
-            throw new RuntimeException(sprintf(
-                'Invalid return value given from "%s".',
-                $method
-            ));
+            throw new RuntimeException(sprintf('Invalid return value given from "%s".', $method));
         }
 
         return $verified;
@@ -497,11 +492,7 @@ abstract class JWT implements Iterator
         }
 
         // Create, populate, and then return the resulting JWT object
-        $jwt = new static(
-            $header['alg'] ?? null,
-            $header,
-            $signature
-        );
+        $jwt = new static($header['alg'] ?? null, $header, $signature);
 
         foreach ($payload as $claim => $value) {
             $jwt->{$claim} = $value;
@@ -575,10 +566,7 @@ abstract class JWT implements Iterator
         $error = json_last_error();
 
         if ($error !== JSON_ERROR_NONE) {
-            throw new JsonException(sprintf(
-                'Unable to decode the given JSON string (%s).',
-                $error
-            ));
+            throw new JsonException(sprintf('Unable to decode the given JSON string (%s).', $error));
         }
 
         return $data;
@@ -597,10 +585,7 @@ abstract class JWT implements Iterator
         $error = json_last_error();
 
         if ($error !== JSON_ERROR_NONE) {
-            throw new JsonException(sprintf(
-                'Unable to encode the given data (%s).',
-                $error
-            ));
+            throw new JsonException(sprintf('Unable to encode the given data (%s).', $error));
         }
 
         return $json;

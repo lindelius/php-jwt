@@ -3,7 +3,7 @@
 namespace Lindelius\JWT\Exception;
 
 /**
- * Class JsonException
+ * An exception thrown if an error occurs while encoding or decoding a JWT.
  */
 class JsonException extends RuntimeException
 {
