@@ -10,13 +10,12 @@ use Lindelius\JWT\Exception\ExpiredJwtException;
 use Lindelius\JWT\Exception\InvalidArgumentException;
 use Lindelius\JWT\Exception\InvalidAudienceException;
 use Lindelius\JWT\Exception\InvalidJwtException;
-use Lindelius\JWT\Exception\InvalidKeyException;
 use Lindelius\JWT\Exception\InvalidSignatureException;
 use Lindelius\JWT\Exception\JsonException;
 use Lindelius\JWT\Exception\RuntimeException;
 
 /**
- * Class JWT
+ * An abstract base class for JWT models.
  */
 abstract class JWT implements Iterator
 {
@@ -35,14 +34,14 @@ abstract class JWT implements Iterator
     private $algorithm;
 
     /**
-     * The JWT's hash.
+     * The hash representation of the JWT.
      *
      * @var string|null
      */
     private $hash = null;
 
     /**
-     * The JWT's header.
+     * The header data included with the JWT.
      *
      * @var array
      */
@@ -56,32 +55,29 @@ abstract class JWT implements Iterator
     private $payload = [];
 
     /**
-     * The JWT's signature.
+     * The signature of the JWT.
      *
      * @var string|null
      */
     private $signature;
 
     /**
-     * JWT constructor.
+     * Construct a JWT object.
      *
-     * @param string      $algorithm
-     * @param array       $header
-     * @param string|null $signature
+     * @param  string      $algorithm
+     * @param  array       $header
+     * @param  string|null $signature
+     * @return void
      */
     public function __construct(string $algorithm, array $header = [], ?string $signature = null)
     {
         $this->algorithm = $algorithm;
+        $this->header    = $header;
         $this->signature = $signature;
 
         // Make sure the JWT's header include all of the required fields
-        $this->header = array_merge(
-            $header,
-            [
-                'typ' => 'JWT',
-                'alg' => $algorithm,
-            ]
-        );
+        $this->header['alg'] = $algorithm;
+        $this->header['typ'] = 'JWT';
     }
 
     /**
@@ -119,7 +115,7 @@ abstract class JWT implements Iterator
     }
 
     /**
-     * Convert the JWT to its string representation, i.e. return its hash.
+     * Get the string representation of the JWT (i.e. its hash).
      *
      * @return string
      */
@@ -147,6 +143,7 @@ abstract class JWT implements Iterator
     /**
      * Get the value of the "current" claim in the payload array.
      *
+     * @see https://www.php.net/manual/en/iterator.current.php
      * @return mixed
      */
     public function current()
@@ -167,7 +164,7 @@ abstract class JWT implements Iterator
     {
         $segments = [];
 
-        // Build the JWT's main segments
+        // Build the main segments of the JWT
         $segments[] = url_safe_base64_encode(static::jsonEncode($this->header));
         $segments[] = url_safe_base64_encode(static::jsonEncode($this->payload));
 
@@ -205,7 +202,8 @@ abstract class JWT implements Iterator
     }
 
     /**
-     * Get the JWT's hash, or null if it hasn't been signed.
+     * Get the hash representation of the JWT, or null if it has not yet been
+     * signed.
      *
      * @return string|null
      */
@@ -215,7 +213,7 @@ abstract class JWT implements Iterator
     }
 
     /**
-     * Get the JWT's header.
+     * Get the header data included with the JWT.
      *
      * @return array
      */
@@ -225,7 +223,7 @@ abstract class JWT implements Iterator
     }
 
     /**
-     * Get the current value for a given header field.
+     * Get the current value of a given header field.
      *
      * @param  string $name
      * @return mixed
@@ -240,7 +238,7 @@ abstract class JWT implements Iterator
     }
 
     /**
-     * Get the JWT's payload.
+     * Get the entire payload of the JWT.
      *
      * @return array
      */
@@ -252,6 +250,7 @@ abstract class JWT implements Iterator
     /**
      * Get the name of the "current" claim in the payload array.
      *
+     * @see https://www.php.net/manual/en/iterator.key.php
      * @return string|null
      */
     public function key(): ?string
@@ -262,6 +261,7 @@ abstract class JWT implements Iterator
     /**
      * Advance the iterator to the "next" claim in the payload array.
      *
+     * @see https://www.php.net/manual/en/iterator.next.php
      * @return void
      */
     public function next(): void
@@ -272,6 +272,7 @@ abstract class JWT implements Iterator
     /**
      * Rewind the payload iterator.
      *
+     * @see https://www.php.net/manual/en/iterator.rewind.php
      * @return void
      */
     public function rewind(): void
@@ -297,6 +298,7 @@ abstract class JWT implements Iterator
     /**
      * Check whether the current position in the payload array is valid.
      *
+     * @see https://www.php.net/manual/en/iterator.valid.php
      * @return bool
      */
     public function valid(): bool

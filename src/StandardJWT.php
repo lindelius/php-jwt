@@ -5,18 +5,19 @@ namespace Lindelius\JWT;
 use Lindelius\JWT\Algorithm\HMAC\HS256;
 
 /**
- * Class StandardJWT
+ * A standard JWT model implementation.
  */
 class StandardJWT extends JWT
 {
     use HS256;
 
     /**
-     * StandardJWT constructor.
+     * Construct a standard JWT object.
      *
-     * @param string      $algorithm
-     * @param array       $header
-     * @param string|null $signature
+     * @param  string      $algorithm
+     * @param  array       $header
+     * @param  string|null $signature
+     * @return void
      */
     public function __construct(string $algorithm = 'HS256', array $header = [], ?string $signature = null)
     {
