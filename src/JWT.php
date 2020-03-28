@@ -24,7 +24,7 @@ abstract class JWT implements Iterator
      *
      * @var int
      */
-    protected static $leeway = 0;
+    public static $leeway = 0;
 
     /**
      * The hashing algorithm to use when encoding the JWT.
@@ -404,7 +404,7 @@ abstract class JWT implements Iterator
             [$key, $dataToSign]
         );
 
-        if (!is_string($signature) || empty($signature)) {
+        if (empty($signature) || !is_string($signature)) {
             throw new RuntimeException('Unable to sign the JWT.');
         }
 
@@ -523,16 +523,6 @@ abstract class JWT implements Iterator
         }
 
         return static::create($header, $claims, $decodedSignature);
-    }
-
-    /**
-     * Get the leeway time (in seconds).
-     *
-     * @return int
-     */
-    public static function getLeewayTime(): int
-    {
-        return static::$leeway;
     }
 
     /**

@@ -12,5 +12,5 @@ class LeewayJWT extends TestJWT
      *
      * @var int
      */
-    protected static $leeway = 90;
+    public static $leeway = 90;
 }
