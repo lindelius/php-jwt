@@ -34,6 +34,13 @@ abstract class JWT implements Iterator
     private $algorithm;
 
     /**
+     * The set of claims included with the JWT.
+     *
+     * @var array
+     */
+    private $claims = [];
+
+    /**
      * The hash representation of the JWT.
      *
      * @var string|null
@@ -46,13 +53,6 @@ abstract class JWT implements Iterator
      * @var array
      */
     private $header = [];
-
-    /**
-     * The JWT's payload.
-     *
-     * @var array
-     */
-    private $payload = [];
 
     /**
      * The signature of the JWT.
@@ -99,7 +99,7 @@ abstract class JWT implements Iterator
      */
     public function __isset(string $claim): bool
     {
-        return isset($this->payload[$claim]);
+        return isset($this->claims[$claim]);
     }
 
     /**
@@ -132,23 +132,23 @@ abstract class JWT implements Iterator
      */
     public function __unset(string $claimName): void
     {
-        if (array_key_exists($claimName, $this->payload)) {
-            // Clear the hash since it will no longer be valid
+        // If the claim exists, clear the hash since it will no longer be valid
+        if (array_key_exists($claimName, $this->claims)) {
             $this->hash = null;
         }
 
-        unset($this->payload[$claimName]);
+        unset($this->claims[$claimName]);
     }
 
     /**
-     * Get the value of the "current" claim in the payload array.
+     * Get the value of the "current" claim.
      *
      * @see https://www.php.net/manual/en/iterator.current.php
      * @return mixed
      */
     public function current()
     {
-        return current($this->payload);
+        return current($this->claims);
     }
 
     /**
@@ -166,7 +166,7 @@ abstract class JWT implements Iterator
 
         // Build the main segments of the JWT
         $segments[] = url_safe_base64_encode(static::jsonEncode($this->header));
-        $segments[] = url_safe_base64_encode(static::jsonEncode($this->payload));
+        $segments[] = url_safe_base64_encode(static::jsonEncode($this->claims));
 
         // Sign the JWT with the given key
         $segments[] = url_safe_base64_encode(
@@ -184,11 +184,7 @@ abstract class JWT implements Iterator
      */
     public function getClaim(string $name)
     {
-        if (isset($this->payload[$name])) {
-            return $this->payload[$name];
-        }
-
-        return null;
+        return $this->claims[$name] ?? null;
     }
 
     /**
@@ -198,7 +194,7 @@ abstract class JWT implements Iterator
      */
     public function getClaims(): array
     {
-        return $this->payload;
+        return $this->claims;
     }
 
     /**
@@ -230,54 +226,40 @@ abstract class JWT implements Iterator
      */
     public function getHeaderField(string $name)
     {
-        if (isset($this->header[$name])) {
-            return $this->header[$name];
-        }
-
-        return null;
+        return $this->header[$name] ?? null;
     }
 
     /**
-     * Get the entire payload of the JWT.
-     *
-     * @return array
-     */
-    public function getPayload(): array
-    {
-        return $this->payload;
-    }
-
-    /**
-     * Get the name of the "current" claim in the payload array.
+     * Get the name of the "current" claim.
      *
      * @see https://www.php.net/manual/en/iterator.key.php
-     * @return string|null
+     * @return mixed
      */
-    public function key(): ?string
+    public function key()
     {
-        return key($this->payload);
+        return key($this->claims);
     }
 
     /**
-     * Advance the iterator to the "next" claim in the payload array.
+     * Advance the iterator to the "next" claim.
      *
      * @see https://www.php.net/manual/en/iterator.next.php
      * @return void
      */
     public function next(): void
     {
-        next($this->payload);
+        next($this->claims);
     }
 
     /**
-     * Rewind the payload iterator.
+     * Rewind the claims iterator.
      *
      * @see https://www.php.net/manual/en/iterator.rewind.php
      * @return void
      */
     public function rewind(): void
     {
-        reset($this->payload);
+        reset($this->claims);
     }
 
     /**
@@ -289,14 +271,14 @@ abstract class JWT implements Iterator
      */
     public function setClaim(string $name, $value): void
     {
-        $this->payload[$name] = $value;
+        $this->claims[$name] = $value;
 
         // Clear the generated hash since it's no longer valid
         $this->hash = null;
     }
 
     /**
-     * Check whether the current position in the payload array is valid.
+     * Check whether the current position in the claims array is valid.
      *
      * @see https://www.php.net/manual/en/iterator.valid.php
      * @return bool
@@ -336,8 +318,8 @@ abstract class JWT implements Iterator
         // Verify the signature
         $dataToSign = sprintf(
             '%s.%s',
-            url_safe_base64_encode(static::jsonEncode($this->getHeader())),
-            url_safe_base64_encode(static::jsonEncode($this->getPayload()))
+            url_safe_base64_encode(static::jsonEncode($this->header)),
+            url_safe_base64_encode(static::jsonEncode($this->claims))
         );
 
         if (!$this->verifySignature($key, $dataToSign)) {
@@ -467,13 +449,13 @@ abstract class JWT implements Iterator
      * Create a new JWT from given data.
      *
      * @param  array|object $header
-     * @param  array|object $payload
+     * @param  array|object $claims
      * @param  string|null  $signature
      * @return static
      * @throws InvalidArgumentException
      * @throws InvalidJwtException
      */
-    public static function create($header = [], $payload = [], ?string $signature = null)
+    public static function create($header = [], $claims = [], ?string $signature = null)
     {
         if (!is_array($header) && !is_object($header)) {
             throw new InvalidArgumentException('Invalid JWT header.');
@@ -485,16 +467,16 @@ abstract class JWT implements Iterator
             throw new InvalidJwtException('Invalid JWT type.');
         }
 
-        if (!is_array($payload) && !is_object($payload)) {
-            throw new InvalidArgumentException('Invalid JWT payload.');
+        if (!is_array($claims) && !is_object($claims)) {
+            throw new InvalidArgumentException('Invalid set of JWT claims.');
         } else {
-            $payload = (array) $payload;
+            $claims = (array) $claims;
         }
 
         // Create, populate, and then return the resulting JWT object
         $jwt = new static($header['alg'] ?? null, $header, $signature);
 
-        foreach ($payload as $claim => $value) {
+        foreach ($claims as $claim => $value) {
             $jwt->{$claim} = $value;
         }
 
@@ -523,8 +505,8 @@ abstract class JWT implements Iterator
             throw new InvalidJwtException('Invalid header encoding.');
         }
 
-        if (false === ($decodedPayload = url_safe_base64_decode($segments[1]))) {
-            throw new InvalidJwtException('Invalid payload encoding.');
+        if (false === ($decodedClaims = url_safe_base64_decode($segments[1]))) {
+            throw new InvalidJwtException('Invalid claims encoding.');
         }
 
         if (false === ($decodedSignature = url_safe_base64_decode($segments[2]))) {
@@ -536,11 +518,11 @@ abstract class JWT implements Iterator
             throw new InvalidJwtException('Invalid JWT header.');
         }
 
-        if (empty($payload = static::jsonDecode($decodedPayload))) {
-            throw new InvalidJwtException('Invalid JWT payload.');
+        if (empty($claims = static::jsonDecode($decodedClaims))) {
+            throw new InvalidJwtException('Invalid set of JWT claims.');
         }
 
-        return static::create($header, $payload, $decodedSignature);
+        return static::create($header, $claims, $decodedSignature);
     }
 
     /**
