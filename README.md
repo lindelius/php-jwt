@@ -11,7 +11,7 @@ This library conforms to [RFC 7519](https://tools.ietf.org/html/rfc7519), with t
 
 ## Requirements
 
-- PHP 7.1
+- PHP 7.2
 - OpenSSL PHP extension (for certain algorithms)
 
 ## Table of Contents
