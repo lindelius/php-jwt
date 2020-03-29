@@ -39,7 +39,15 @@ composer require "lindelius/php-jwt=^0.8"
 The following is a very basic example of how to issue JWTs with this library:
 
 ```php
-$jwt = new \Lindelius\JWT\StandardJWT();
+use Lindelius\JWT\Algorithm\HMAC\HS256;
+use Lindelius\JWT\JWT;
+
+class MyJWT extends JWT
+{
+    use HS256;
+}
+
+$jwt = new MyJWT('HS256');
 
 $jwt->exp = time() + (60 * 20); // Expire after 20 minutes
 $jwt->iat = time();
@@ -57,7 +65,7 @@ Authorization: Bearer My.Jwt.Token
 For all secured endpoints you need to verify that a JWT is included and that it is valid. You can do so by using the included `JWT::decode()` and `JWT::verify()` methods.
 
 ```php
-$decodedJwt = \Lindelius\JWT\StandardJWT::decode($encodedJwt);
+$decodedJwt = MyJWT::decode($encodedJwt);
 
 /**
  * You can access the claims as soon as you have decoded the JWT.
@@ -72,49 +80,45 @@ $decodedJwt->verify(DECODE_KEY);
 
 #### Algorithm Choices
 
-If you would like to use an algorithm other than "HS256", which is used in the `StandardJWT` model, you may extend the abstract `JWT` model and make use of any of the following algorithms:
+The following algorithms are currently included with the library:
 
-- HS256
-- HS384
-- HS512
-- RS256 *(requires the OpenSSL extension)*
-- RS384 *(requires the OpenSSL extension)*
-- RS512 *(requires the OpenSSL extension)*
+- **HS256**
+- **HS384**
+- **HS512**
+- **RS256** *(requires the OpenSSL extension)*
+- **RS384** *(requires the OpenSSL extension)*
+- **RS512** *(requires the OpenSSL extension)*
 
-Do note that you need to specify which algorithm you want to use when you create the JWTs. This may either be done when you instantiate the objects (like in the example below) or by overriding the constructor (like in the `StandardJWT` implementation).
+You may use any of the algorithms by simply using the relevant trait in your JWT model.
 
 ```php
-class MyJWT extends \Lindelius\JWT\JWT
+use Lindelius\JWT\Algorithm\RSA\RS256;
+use Lindelius\JWT\JWT;
+
+class MyJWT extends JWT
 {
-    use \Lindelius\JWT\Algorithm\RSA\RS512;
+    use RS256;
 }
 
-$jwt = new MyJWT('RS512');
+$jwt = new MyJWT('RS256');
 ```
 
-If you would like to use an algorithm that is not yet supported by the library you can easily implement it yourself by creating the required "encodeWith" and "verifyWith" methods. Please see the included algorithm traits for implementation details.
-
-If you do end up implementing support for an algorithm that is not yet supported by the library, concider creating a PR for it so that others may benefit from it, as well.
+If you would like to use an algorithm that is not yet included with the library you can add support for it by creating the required `encodeWithX()` and `verifyWithX()` methods in the same fashion as the currently included traits.
 
 #### Audiences
 
 If you would like to restrict a JWT to one or more audiences you can easily do so with the `aud` claim. When you create the JWT, set the `aud` claim to one or more audiences. If the JWT should only be valid for a single audience, you can set the value to a string. If it should be valid for more than one audience, the value must be an array of strings.
 
 ```php
-$jwt = new \Lindelius\JWT\StandardJWT();
-
 $jwt->aud = [
     'https://myapp.tld',
     'https://yourapp.tld',
 ];
-
-$encodedJwt = $jwt->encode(ENCODE_KEY);
 ```
 
 When you verify the JWT, just pass the current audience as the second parameter to the `JWT::verify()` method and it will validate it for you.
 
 ```php
-$decodedJwt = \Lindelius\JWT\StandardJWT::decode($encodedJwt);
 $decodedJwt->verify(DECODE_KEY, $currentAudience);
 ```
 
@@ -123,15 +127,10 @@ $decodedJwt->verify(DECODE_KEY, $currentAudience);
 If there are time differences between your application servers, you can extend the abstract `JWT` model and make use of the `JWT::$leeway` property to give your servers some extra seconds when verifying certain claims (`iat`, `nbf`, and `exp`). The property's value should be a positive integer representing the number of extra seconds that your servers need.
 
 ```php
-class MyJWT extends \Lindelius\JWT\JWT
-{
-    use \Lindelius\JWT\Algorithm\HMAC\HS256;
+use Lindelius\JWT\JWT;
 
-    /**
-     * Leeway time (in seconds) to account for clock skew.
-     *
-     * @var int
-     */
+class MyJWT extends JWT
+{
     protected static $leeway = 90;
 }
 ```
@@ -147,7 +146,7 @@ $keys = [
     'key_3' => 'RfxRP43BIKoSQ7P1GfeO',
 ];
 
-$jwt = new \Lindelius\JWT\StandardJWT(['kid' => 'key_2']);
+$jwt->setHeaderField('kid', 'key_2');
 
 $encodedJwt = $jwt->encode($keys['key_2']);
 ```
@@ -155,7 +154,7 @@ $encodedJwt = $jwt->encode($keys['key_2']);
 If you use this approach, all you have to do when verifying the JWT is to provide the `JWT::verify()` method with the `$keys` array and it will automatically look-up and use the correct key.
 
 ```php
-$decodedJwt = \Lindelius\JWT\StandardJWT::decode($encodedJwt);
+$decodedJwt = MyJWT::decode($encodedJwt);
 $decodedJwt->verify($keys);
 ```
 
@@ -166,13 +165,8 @@ This library throws a variety of different exceptions in order to allow for diff
 ```php
 try {
 
-    $jwt = new \Lindelius\JWT\StandardJWT();
-
-    $jwt->exp = time() + (60 * 60 * 2); // expire after 2 hours
-    $jwt->iat = time();
-    $jwt->sub = $user->id;
-
-    $accessToken = $jwt->encode(ENCODE_KEY);
+    $jwt = MyJWT::decode($encodedJwt);
+    $jwt->verify(DECODE_KEY);
 
 } catch (\Lindelius\JWT\Exception\Exception $exception) {
     // This catches any exception thrown by the library
