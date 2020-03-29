@@ -35,7 +35,7 @@ class JWTTest extends TestCase
     }
 
     /**
-     * @param mixed $key
+     * @param  mixed $key
      * @throws \Lindelius\JWT\Exception\Exception
      * @expectedException \Lindelius\JWT\Exception\InvalidJwtException
      * @expectedExceptionMessage Invalid key.
@@ -48,7 +48,7 @@ class JWTTest extends TestCase
     }
 
     /**
-     * @param mixed $key
+     * @param  mixed $key
      * @throws \Lindelius\JWT\Exception\Exception
      * @expectedException \Lindelius\JWT\Exception\InvalidJwtException
      * @expectedExceptionMessage Invalid key.
@@ -56,13 +56,13 @@ class JWTTest extends TestCase
      */
     public function testEncodeWithInvalidKey($key)
     {
-        $jwt = TestJWT::create('HS256');
+        $jwt = TestJWT::create(TestJWT::HS256);
         $jwt->setClaim('some_field', 'any_value');
         $jwt->encode($key);
     }
 
     /**
-     * @param mixed $algorithm
+     * @param  mixed $algorithm
      * @throws \Lindelius\JWT\Exception\Exception
      * @expectedException \TypeError
      * @dataProvider invalidAlgorithmProvider
@@ -114,7 +114,7 @@ class JWTTest extends TestCase
     {
         $keys = ['correct_kid' => 'my_key'];
 
-        $jwt = TestJWT::create('HS256');
+        $jwt = TestJWT::create(TestJWT::HS256);
         $jwt->setHeaderField('kid', 'wrong_kid');
         $jwt->setClaim('some_field', 'any_value');
 
@@ -129,7 +129,7 @@ class JWTTest extends TestCase
      */
     public function testFullLifeCycleHS256()
     {
-        $jwt = TestJWT::create('HS256');
+        $jwt = TestJWT::create(TestJWT::HS256);
         $jwt->setClaim('some_field', 'any_value');
         $jwt->encode('my_key');
 
@@ -146,7 +146,7 @@ class JWTTest extends TestCase
      */
     public function testFullLifeCycleHS384()
     {
-        $jwt = TestJWT::create('HS384');
+        $jwt = TestJWT::create(TestJWT::HS384);
         $jwt->setClaim('some_field', 'any_value');
         $jwt->encode('my_key');
 
@@ -163,7 +163,7 @@ class JWTTest extends TestCase
      */
     public function testFullLifeCycleHS512()
     {
-        $jwt = TestJWT::create('HS512');
+        $jwt = TestJWT::create(TestJWT::HS512);
         $jwt->setClaim('some_field', 'any_value');
         $jwt->encode('my_key');
 
@@ -187,7 +187,7 @@ class JWTTest extends TestCase
 
         $publicKey = openssl_pkey_get_details($resource)['key'];
 
-        $jwt = TestJWT::create('RS256');
+        $jwt = TestJWT::create(TestJWT::RS256);
         $jwt->setClaim('some_field', 'any_value');
         $jwt->encode($privateKey);
 
@@ -211,7 +211,7 @@ class JWTTest extends TestCase
 
         $publicKey = openssl_pkey_get_details($resource)['key'];
 
-        $jwt = TestJWT::create('RS384');
+        $jwt = TestJWT::create(TestJWT::RS384);
         $jwt->setClaim('some_field', 'any_value');
         $jwt->encode($privateKey);
 
@@ -235,7 +235,7 @@ class JWTTest extends TestCase
 
         $publicKey = openssl_pkey_get_details($resource)['key'];
 
-        $jwt = TestJWT::create('RS512');
+        $jwt = TestJWT::create(TestJWT::RS512);
         $jwt->setClaim('some_field', 'any_value');
         $jwt->encode($privateKey);
 
@@ -286,7 +286,7 @@ class JWTTest extends TestCase
      */
     public function testIteratorImplementation()
     {
-        $jwt = TestJWT::create('HS256');
+        $jwt = TestJWT::create(TestJWT::HS256);
 
         $jwt->setClaim('a', 1);
         $jwt->setClaim('b', 2);

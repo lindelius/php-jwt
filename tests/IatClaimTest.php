@@ -17,7 +17,7 @@ class IatClaimTest extends TestCase
      */
     public function testDecodeWithIatWithinLeewayTime()
     {
-        $jwt = LeewayJWT::create('HS256');
+        $jwt = LeewayJWT::create(LeewayJWT::HS256);
         $jwt->setClaim('iat', time() + 30);
 
         $decodedJwt = LeewayJWT::decode($jwt->encode('my_key'));
@@ -33,7 +33,7 @@ class IatClaimTest extends TestCase
      */
     public function testDecodeWithIatOutsideOfLeewayTime()
     {
-        $jwt = LeewayJWT::create('HS256');
+        $jwt = LeewayJWT::create(LeewayJWT::HS256);
         $jwt->setClaim('iat', time() + 100);
 
         $decodedJwt = LeewayJWT::decode($jwt->encode('my_key'));

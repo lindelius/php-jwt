@@ -19,6 +19,14 @@ use Lindelius\JWT\Exception\RuntimeException;
  */
 abstract class JWT implements Iterator
 {
+    public const HS256 = 'HS256';
+    public const HS384 = 'HS384';
+    public const HS512 = 'HS512';
+
+    public const RS256 = 'RS256';
+    public const RS384 = 'RS384';
+    public const RS512 = 'RS512';
+
     /**
      * Leeway time (in seconds) to account for clock skew between servers.
      *

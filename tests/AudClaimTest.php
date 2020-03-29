@@ -47,7 +47,7 @@ class AudClaimTest extends TestCase
      */
     public function testDecodeWithInvalidAudValue($aud)
     {
-        $jwt = TestJWT::create('HS256');
+        $jwt = TestJWT::create(TestJWT::HS256);
         $jwt->setClaim('aud', $aud);
 
         $decodedJwt = TestJWT::decode($jwt->encode('my_key'));
