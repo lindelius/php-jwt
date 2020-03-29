@@ -47,7 +47,7 @@ class AudClaimTest extends TestCase
      */
     public function testDecodeWithInvalidAudValue($aud)
     {
-        $jwt = new TestJWT('HS256');
+        $jwt = TestJWT::create('HS256');
         $jwt->setClaim('aud', $aud);
 
         $decodedJwt = TestJWT::decode($jwt->encode('my_key'));
@@ -83,10 +83,7 @@ class AudClaimTest extends TestCase
     {
         $decodedJwt = TestJWT::decode('eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJhdWQiOiJodHRwczpcL1wvbXlhcHAudGxkIn0.kfXUmztf59REc6YAHNS7J1SleE_ufiWK7bTgSqM_buo');
 
-        $this->assertEquals(
-            true,
-            $decodedJwt->verify('my_key', 'https://myapp.tld')
-        );
+        $this->assertEquals(true, $decodedJwt->verify('my_key', 'https://myapp.tld'));
     }
 
     /**
@@ -98,9 +95,6 @@ class AudClaimTest extends TestCase
     {
         $decodedJwt = TestJWT::decode('eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJhdWQiOlsiaHR0cHM6XC9cL215YXBwLnRsZCIsImh0dHBzOlwvXC95b3VyYXBwLnRsZCJdfQ.Yxa674OTihi3i3pp00DEa_BAPMmcIgTwQmbEaN-sNfA');
 
-        $this->assertEquals(
-            true,
-            $decodedJwt->verify('my_key', 'https://myapp.tld')
-        );
+        $this->assertEquals(true, $decodedJwt->verify('my_key', 'https://myapp.tld'));
     }
 }

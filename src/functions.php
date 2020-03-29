@@ -18,7 +18,7 @@ if (!function_exists('url_safe_base64_decode')) {
      * Decodes data encoded with URL-safe Base64.
      *
      * @param  string $input
-     * @return string|bool
+     * @return string|false
      */
     function url_safe_base64_decode(string $input)
     {

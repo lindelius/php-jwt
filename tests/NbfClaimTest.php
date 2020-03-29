@@ -17,7 +17,7 @@ class NbfClaimTest extends TestCase
      */
     public function testDecodeWithNbfWithinLeewayTime()
     {
-        $jwt = new LeewayJWT('HS256');
+        $jwt = LeewayJWT::create('HS256');
         $jwt->setClaim('nbf', time() + 30);
 
         $decodedJwt = LeewayJWT::decode($jwt->encode('my_key'));
@@ -32,7 +32,7 @@ class NbfClaimTest extends TestCase
      */
     public function testDecodeWithNbfOutsideOfLeewayTime()
     {
-        $jwt = new LeewayJWT('HS256');
+        $jwt = LeewayJWT::create('HS256');
         $jwt->setClaim('nbf', time() + 100);
 
         $decodedJwt = LeewayJWT::decode($jwt->encode('my_key'));

@@ -17,7 +17,7 @@ class ExpClaimTest extends TestCase
      */
     public function testDecodeWithExpWithinLeewayTime()
     {
-        $jwt = new LeewayJWT('HS256');
+        $jwt = LeewayJWT::create('HS256');
         $jwt->setClaim('exp', time() - 30);
 
         $decodedJwt = LeewayJWT::decode($jwt->encode('my_key'));
@@ -32,7 +32,7 @@ class ExpClaimTest extends TestCase
      */
     public function testDecodeWithExpOutsideOfLeewayTime()
     {
-        $jwt = new LeewayJWT('HS256');
+        $jwt = LeewayJWT::create('HS256');
         $jwt->setClaim('exp', time() - 100);
 
         $decodedJwt = LeewayJWT::decode($jwt->encode('my_key'));

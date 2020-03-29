@@ -55,32 +55,6 @@ abstract class JWT implements Iterator
     private $header = [];
 
     /**
-     * The signature of the JWT.
-     *
-     * @var string|null
-     */
-    private $signature;
-
-    /**
-     * Construct a JWT object.
-     *
-     * @param  string      $algorithm
-     * @param  array       $header
-     * @param  string|null $signature
-     * @return void
-     */
-    public function __construct(string $algorithm, array $header = [], ?string $signature = null)
-    {
-        $this->algorithm = $algorithm;
-        $this->header    = $header;
-        $this->signature = $signature;
-
-        // Make sure the JWT's header include all of the required fields
-        $this->header['alg'] = $algorithm;
-        $this->header['typ'] = 'JWT';
-    }
-
-    /**
      * Get the current value for a given claim.
      *
      * @param  string $claim
@@ -170,7 +144,7 @@ abstract class JWT implements Iterator
 
         // Sign the JWT with the given key
         $segments[] = url_safe_base64_encode(
-            $this->signature = $this->generateSignature($key, implode('.', $segments))
+            $this->generateSignature($key, implode('.', $segments))
         );
 
         return $this->hash = implode('.', $segments);
@@ -334,14 +308,7 @@ abstract class JWT implements Iterator
             }
         }
 
-        // Verify the signature
-        $dataToSign = sprintf(
-            '%s.%s',
-            url_safe_base64_encode(static::jsonEncode($this->header)),
-            url_safe_base64_encode(static::jsonEncode($this->claims))
-        );
-
-        if (!$this->verifySignature($key, $dataToSign)) {
+        if (!$this->verifySignature($key)) {
             throw new InvalidSignatureException('Invalid JWT signature.');
         }
 
@@ -402,6 +369,73 @@ abstract class JWT implements Iterator
     }
 
     /**
+     * Decode a given JWT hash and use the decoded data to populate the object.
+     *
+     * @param  string $hash
+     * @return void
+     * @throws InvalidJwtException
+     */
+    public function decodeAndInitialize(string $hash): void
+    {
+        $segments = explode('.', $hash);
+
+        if (count($segments) !== 3) {
+            throw new InvalidJwtException('Unexpected number of JWT segments.');
+        }
+
+        // Decode the JWT's segments
+        if (false === ($decodedHeader = url_safe_base64_decode($segments[0]))) {
+            throw new InvalidJwtException('Invalid header encoding.');
+        }
+
+        if (false === ($decodedClaims = url_safe_base64_decode($segments[1]))) {
+            throw new InvalidJwtException('Invalid claims encoding.');
+        }
+
+        if (false === ($decodedSignature = url_safe_base64_decode($segments[2]))) {
+            throw new InvalidJwtException('Invalid signature encoding.');
+        }
+
+        // Validate the decoded header
+        if (empty($header = static::jsonDecode($decodedHeader))) {
+            throw new InvalidJwtException('Invalid JWT header.');
+        }
+
+        if (!is_array($header) && !is_object($header)) {
+            throw new InvalidArgumentException('Invalid JWT header.');
+        } else {
+            $header = (array) $header;
+        }
+
+        if (empty($header['typ']) || $header['typ'] !== 'JWT') {
+            throw new InvalidJwtException('Invalid JWT type.');
+        }
+
+        // Validate the decoded claims
+        if (empty($claims = static::jsonDecode($decodedClaims))) {
+            throw new InvalidJwtException('Invalid set of JWT claims.');
+        }
+
+        if (!is_array($claims) && !is_object($claims)) {
+            throw new InvalidArgumentException('Invalid set of JWT claims.');
+        } else {
+            $claims = (array) $claims;
+        }
+
+        // Populate the JWT with the decoded data
+        foreach ($header as $field => $value) {
+            $this->setHeaderField($field, $value);
+        }
+
+        foreach ($claims as $name => $value) {
+            $this->setClaim($name, $value);
+        }
+
+        // Use the original hash to prevent verification failures due to encoding discrepancies
+        $this->hash = $hash;
+    }
+
+    /**
      * Generate a signature for the JWT using a given key.
      *
      * @param  mixed  $key
@@ -433,17 +467,18 @@ abstract class JWT implements Iterator
     /**
      * Verify the JWT's signature using a given key.
      *
-     * @param  mixed  $key
-     * @param  string $dataToSign
+     * @param  mixed $key
      * @return bool
      * @throws DomainException
      * @throws InvalidSignatureException
      * @throws RuntimeException
      */
-    protected function verifySignature($key, string $dataToSign): bool
+    protected function verifySignature($key): bool
     {
-        if (empty($this->signature)) {
-            throw new InvalidSignatureException('Invalid signature.');
+        $segments = explode('.', $this->hash ?: '');
+
+        if (count($segments) !== 3) {
+            throw new InvalidSignatureException('Unable to verify the signature due to an invalid JWT hash.');
         }
 
         $method = 'verifyWith' . $this->algorithm;
@@ -452,9 +487,12 @@ abstract class JWT implements Iterator
             throw new DomainException('Unsupported hashing algorithm.');
         }
 
+        $dataToSign = $segments[0] . '.' . $segments[1];
+        $signature  = $segments[2];
+
         $verified = call_user_func_array(
             [$this, $method],
-            [$key, $dataToSign, $this->signature]
+            [$key, $dataToSign, url_safe_base64_decode($signature)]
         );
 
         if (!is_bool($verified)) {
@@ -465,39 +503,16 @@ abstract class JWT implements Iterator
     }
 
     /**
-     * Create a new JWT from given data.
+     * Create a new JWT.
      *
-     * @param  array|object $header
-     * @param  array|object $claims
-     * @param  string|null  $signature
+     * @param  string $algorithm
      * @return static
-     * @throws InvalidArgumentException
-     * @throws InvalidJwtException
      */
-    public static function create($header = [], $claims = [], ?string $signature = null)
+    public static function create(string $algorithm)
     {
-        if (!is_array($header) && !is_object($header)) {
-            throw new InvalidArgumentException('Invalid JWT header.');
-        } else {
-            $header = (array) $header;
-        }
-
-        if (isset($header['typ']) && $header['typ'] !== 'JWT') {
-            throw new InvalidJwtException('Invalid JWT type.');
-        }
-
-        if (!is_array($claims) && !is_object($claims)) {
-            throw new InvalidArgumentException('Invalid set of JWT claims.');
-        } else {
-            $claims = (array) $claims;
-        }
-
-        // Create, populate, and then return the resulting JWT object
-        $jwt = new static($header['alg'] ?? null, $header, $signature);
-
-        foreach ($claims as $claim => $value) {
-            $jwt->{$claim} = $value;
-        }
+        $jwt = new static();
+        $jwt->setHeaderField('alg', $algorithm);
+        $jwt->setHeaderField('typ', 'JWT');
 
         return $jwt;
     }
@@ -505,43 +520,16 @@ abstract class JWT implements Iterator
     /**
      * Decode a JWT hash and return the resulting object.
      *
-     * @param  string $jwt
+     * @param  string $hash
      * @return static
-     * @throws InvalidArgumentException
      * @throws InvalidJwtException
-     * @throws JsonException
      */
-    public static function decode(string $jwt)
+    public static function decode(string $hash)
     {
-        $segments = explode('.', $jwt);
+        $jwt = new static();
+        $jwt->decodeAndInitialize($hash);
 
-        if (count($segments) !== 3) {
-            throw new InvalidJwtException('Unexpected number of JWT segments.');
-        }
-
-        // Decode the JWT's segments
-        if (false === ($decodedHeader = url_safe_base64_decode($segments[0]))) {
-            throw new InvalidJwtException('Invalid header encoding.');
-        }
-
-        if (false === ($decodedClaims = url_safe_base64_decode($segments[1]))) {
-            throw new InvalidJwtException('Invalid claims encoding.');
-        }
-
-        if (false === ($decodedSignature = url_safe_base64_decode($segments[2]))) {
-            throw new InvalidJwtException('Invalid signature encoding.');
-        }
-
-        // Validate the decoded values
-        if (empty($header = static::jsonDecode($decodedHeader))) {
-            throw new InvalidJwtException('Invalid JWT header.');
-        }
-
-        if (empty($claims = static::jsonDecode($decodedClaims))) {
-            throw new InvalidJwtException('Invalid set of JWT claims.');
-        }
-
-        return static::create($header, $claims, $decodedSignature);
+        return $jwt;
     }
 
     /**
