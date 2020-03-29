@@ -308,7 +308,17 @@ abstract class JWT implements Iterator
             }
         }
 
-        if (!$this->verifySignature($key)) {
+        // Verify the signature
+        $segments = explode('.', $this->hash ?: '');
+
+        if (count($segments) !== 3) {
+            throw new InvalidSignatureException('Unable to verify the signature due to an invalid JWT hash.');
+        }
+
+        $dataToSign = $segments[0] . '.' . $segments[1];
+        $signature  = url_safe_base64_decode($segments[2]);
+
+        if (!$this->verifySignature($key, $dataToSign, $signature)) {
             throw new InvalidSignatureException('Invalid JWT signature.');
         }
 
@@ -467,32 +477,24 @@ abstract class JWT implements Iterator
     /**
      * Verify the JWT's signature using a given key.
      *
-     * @param  mixed $key
+     * @param  mixed  $key
+     * @param  string $dataToSign
+     * @param  string $signature
      * @return bool
      * @throws DomainException
-     * @throws InvalidSignatureException
      * @throws RuntimeException
      */
-    protected function verifySignature($key): bool
+    protected function verifySignature($key, string $dataToSign, string $signature): bool
     {
-        $segments = explode('.', $this->hash ?: '');
-
-        if (count($segments) !== 3) {
-            throw new InvalidSignatureException('Unable to verify the signature due to an invalid JWT hash.');
-        }
-
         $method = 'verifyWith' . $this->algorithm;
 
         if (!method_exists($this, $method)) {
             throw new DomainException('Unsupported hashing algorithm.');
         }
 
-        $dataToSign = $segments[0] . '.' . $segments[1];
-        $signature  = $segments[2];
-
         $verified = call_user_func_array(
             [$this, $method],
-            [$key, $dataToSign, url_safe_base64_decode($signature)]
+            [$key, $dataToSign, $signature]
         );
 
         if (!is_bool($verified)) {
