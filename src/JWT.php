@@ -221,12 +221,12 @@ abstract class JWT implements Iterator
     /**
      * Get the current value of a given header field.
      *
-     * @param  string $name
+     * @param  string $field
      * @return mixed
      */
-    public function getHeaderField(string $name)
+    public function getHeaderField(string $field)
     {
-        return $this->header[$name] ?? null;
+        return $this->header[$field] ?? null;
     }
 
     /**
@@ -272,6 +272,21 @@ abstract class JWT implements Iterator
     public function setClaim(string $name, $value): void
     {
         $this->claims[$name] = $value;
+
+        // Clear the generated hash since it's no longer valid
+        $this->hash = null;
+    }
+
+    /**
+     * Set a new value for a given header field.
+     *
+     * @param  string $field
+     * @param  mixed  $value
+     * @return void
+     */
+    public function setHeaderField(string $field, $value): void
+    {
+        $this->header[$field] = $value;
 
         // Clear the generated hash since it's no longer valid
         $this->hash = null;
