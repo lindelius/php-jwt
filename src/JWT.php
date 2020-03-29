@@ -29,7 +29,7 @@ abstract class JWT implements Iterator
     /**
      * The hashing algorithm to use when encoding the JWT.
      *
-     * @var string
+     * @var string|null
      */
     private $algorithm;
 
@@ -45,7 +45,7 @@ abstract class JWT implements Iterator
      *
      * @var string|null
      */
-    private $hash = null;
+    private $hash;
 
     /**
      * The header data included with the JWT.
@@ -287,6 +287,10 @@ abstract class JWT implements Iterator
     public function setHeaderField(string $field, $value): void
     {
         $this->header[$field] = $value;
+
+        if ($field === 'alg') {
+            $this->algorithm = $value;
+        }
 
         // Clear the generated hash since it's no longer valid
         $this->hash = null;
