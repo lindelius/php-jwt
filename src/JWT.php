@@ -355,34 +355,24 @@ abstract class JWT implements Iterator
             throw new InvalidJwtException('Invalid claims encoding.');
         }
 
-        if (false === ($decodedSignature = url_safe_base64_decode($segments[2]))) {
+        if (false === url_safe_base64_decode($segments[2])) {
             throw new InvalidJwtException('Invalid signature encoding.');
         }
 
-        // Validate the decoded header
-        if (empty($header = static::jsonDecode($decodedHeader))) {
-            throw new InvalidJwtException('Invalid JWT header.');
-        }
+        // Validate the decoded data
+        $claims = static::jsonDecode($decodedClaims);
+        $header = static::jsonDecode($decodedHeader);
 
-        if (!is_array($header) && !is_object($header)) {
-            throw new InvalidArgumentException('Invalid JWT header.');
-        } else {
-            $header = (array) $header;
-        }
-
-        if (empty($header['typ']) || $header['typ'] !== 'JWT') {
-            throw new InvalidJwtException('Invalid JWT type.');
-        }
-
-        // Validate the decoded claims
-        if (empty($claims = static::jsonDecode($decodedClaims))) {
-            throw new InvalidJwtException('Invalid set of JWT claims.');
-        }
-
-        if (!is_array($claims) && !is_object($claims)) {
-            throw new InvalidArgumentException('Invalid set of JWT claims.');
-        } else {
+        if (is_object($claims)) {
             $claims = (array) $claims;
+        } elseif (!is_array($claims)) {
+            throw new InvalidArgumentException('Invalid set of JWT claims.');
+        }
+
+        if (is_object($header)) {
+            $header = (array) $header;
+        } elseif (!is_array($header)) {
+            throw new InvalidArgumentException('Invalid JWT header.');
         }
 
         // Populate the JWT with the decoded data
