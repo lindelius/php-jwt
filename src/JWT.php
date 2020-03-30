@@ -2,7 +2,6 @@
 
 namespace Lindelius\JWT;
 
-use ArrayAccess;
 use Iterator;
 use Lindelius\JWT\Exception\BeforeValidException;
 use Lindelius\JWT\Exception\DomainException;
@@ -11,6 +10,7 @@ use Lindelius\JWT\Exception\InvalidArgumentException;
 use Lindelius\JWT\Exception\InvalidAudienceException;
 use Lindelius\JWT\Exception\InvalidIssuerException;
 use Lindelius\JWT\Exception\InvalidJwtException;
+use Lindelius\JWT\Exception\InvalidKeyException;
 use Lindelius\JWT\Exception\InvalidSignatureException;
 use Lindelius\JWT\Exception\JsonException;
 use Lindelius\JWT\Exception\RuntimeException;
@@ -310,23 +310,11 @@ abstract class JWT implements Iterator
             throw new InvalidSignatureException('Unable to verify the signature due to an invalid JWT hash.');
         }
 
-        $dataToSign = $segments[0] . '.' . $segments[1];
-        $signature  = url_safe_base64_decode($segments[2]);
-
-        // If the app is using multiple keys, attempt to find the correct one
-        if (is_array($key) || $key instanceof ArrayAccess) {
-            $kid = $this->getHeaderField('kid');
-
-            if ($kid !== null) {
-                if (!is_string($kid) && !is_numeric($kid)) {
-                    throw new InvalidJwtException('Invalid "kid" value. Unable to lookup secret key.');
-                }
-
-                $key = array_key_exists($kid, $key) ? $key[$kid] : null;
-            }
-        }
-
-        $this->verifySignature($key, $dataToSign, $signature);
+        $this->verifySignature(
+            $this->findDecodeKey($key),
+            $segments[0] . '.' . $segments[1],
+            url_safe_base64_decode($segments[2])
+        );
 
         $this->verifyExpClaim();
         $this->verifyIatClaim();
@@ -408,6 +396,32 @@ abstract class JWT implements Iterator
 
         // Use the original hash to prevent verification failures due to encoding discrepancies
         $this->hash = $hash;
+    }
+
+    /**
+     * Find the correct decode key to use when verifying the JWT.
+     *
+     * @param  mixed $key
+     * @return mixed
+     * @throws InvalidJwtException
+     */
+    protected function findDecodeKey($key)
+    {
+        if (is_array($key)) {
+            $keyId = $this->getHeaderField('kid');
+
+            if (!is_string($keyId)) {
+                throw new InvalidJwtException('Unable to find decode key due to an invalid "kid" value.');
+            }
+
+            if (!array_key_exists($keyId, $key)) {
+                throw new InvalidKeyException('Unable to find the correct decode key.');
+            }
+
+            return $key[$keyId];
+        }
+
+        return $key;
     }
 
     /**

@@ -108,7 +108,7 @@ class JWTTest extends TestCase
     /**
      * @throws \Lindelius\JWT\Exception\Exception
      * @expectedException \Lindelius\JWT\Exception\InvalidJwtException
-     * @expectedExceptionMessage Invalid key.
+     * @expectedExceptionMessage Unable to find the correct decode key.
      */
     public function testDecodeWithIncorrectKeyId()
     {
