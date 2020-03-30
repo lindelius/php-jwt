@@ -104,7 +104,7 @@ abstract class JWT implements Iterator
      */
     public function __toString(): string
     {
-        return (string) $this->getHash();
+        return (string) $this->hash;
     }
 
     /**
@@ -398,7 +398,7 @@ abstract class JWT implements Iterator
     protected function findDecodeKey($key)
     {
         if (is_array($key)) {
-            $keyId = $this->getHeaderField('kid');
+            $keyId = $this->header['kid'] ?? null;
 
             if (!is_string($keyId)) {
                 throw new InvalidJwtException('Unable to find decode key due to an invalid "kid" value.');
@@ -457,7 +457,7 @@ abstract class JWT implements Iterator
             $audience = is_array($audience) ? $audience : [$audience];
 
             // Make sure the audience claim is set to a valid value
-            $foundAudience = is_array($this->aud) ? $this->aud : [$this->aud];
+            $foundAudience = is_array($this->claims['aud']) ? $this->claims['aud'] : [$this->claims['aud']];
             $expectedIndex = 0;
 
             foreach ($foundAudience as $index => $value) {
@@ -489,8 +489,8 @@ abstract class JWT implements Iterator
     protected function verifyExpClaim(): void
     {
         if (array_key_exists('exp', $this->claims)) {
-            if (is_numeric($this->exp)) {
-                if ($this->exp < (time() - static::$leeway)) {
+            if (is_numeric($this->claims['exp'])) {
+                if ($this->claims['exp'] < (time() - static::$leeway)) {
                     throw new ExpiredJwtException('The JWT has expired.');
                 }
             } else {
@@ -509,8 +509,8 @@ abstract class JWT implements Iterator
     protected function verifyIatClaim(): void
     {
         if (array_key_exists('iat', $this->claims)) {
-            if (is_numeric($this->iat)) {
-                if ($this->iat > (time() + static::$leeway)) {
+            if (is_numeric($this->claims['iat'])) {
+                if ($this->claims['iat'] > (time() + static::$leeway)) {
                     throw new BeforeValidException('The JWT is not yet valid.');
                 }
             } else {
@@ -530,10 +530,10 @@ abstract class JWT implements Iterator
     protected function verifyIssClaim($issuer): void
     {
         if (array_key_exists('iss', $this->claims)) {
-            if (is_string($this->iss)) {
+            if (is_string($this->claims['iss'])) {
                 $issuer = is_array($issuer) ? $issuer : [$issuer];
 
-                if (!in_array($this->iss, $issuer)) {
+                if (!in_array($this->claims['iss'], $issuer)) {
                     throw new InvalidIssuerException('Invalid JWT issuer.');
                 }
             } else {
@@ -552,8 +552,8 @@ abstract class JWT implements Iterator
     protected function verifyNbfClaim(): void
     {
         if (array_key_exists('nbf', $this->claims)) {
-            if (is_numeric($this->nbf)) {
-                if ($this->nbf > (time() + static::$leeway)) {
+            if (is_numeric($this->claims['nbf'])) {
+                if ($this->claims['nbf'] > (time() + static::$leeway)) {
                     throw new BeforeValidException('The JWT is not yet valid.');
                 }
             } else {
