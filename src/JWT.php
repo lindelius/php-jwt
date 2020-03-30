@@ -303,6 +303,15 @@ abstract class JWT implements Iterator
      */
     public function verify($key, ?string $audience = null): bool
     {
+        $segments = explode('.', $this->hash ?: '');
+
+        if (count($segments) !== 3) {
+            throw new InvalidSignatureException('Unable to verify the signature due to an invalid JWT hash.');
+        }
+
+        $dataToSign = $segments[0] . '.' . $segments[1];
+        $signature  = url_safe_base64_decode($segments[2]);
+
         // If the app is using multiple keys, attempt to find the correct one
         if (is_array($key) || $key instanceof ArrayAccess) {
             $kid = $this->getHeaderField('kid');
@@ -316,72 +325,12 @@ abstract class JWT implements Iterator
             }
         }
 
-        // Verify the signature
-        $segments = explode('.', $this->hash ?: '');
+        $this->verifySignature($key, $dataToSign, $signature);
 
-        if (count($segments) !== 3) {
-            throw new InvalidSignatureException('Unable to verify the signature due to an invalid JWT hash.');
-        }
-
-        $dataToSign = $segments[0] . '.' . $segments[1];
-        $signature  = url_safe_base64_decode($segments[2]);
-
-        if (!$this->verifySignature($key, $dataToSign, $signature)) {
-            throw new InvalidSignatureException('Invalid JWT signature.');
-        }
-
-        // Validate the audience constraint, if included
-        if (isset($this->aud)) {
-            // Make sure the audience claim is set to a valid value
-            if (is_array($this->aud)) {
-                $expectedIndex = 0;
-
-                foreach ($this->aud as $index => $aud) {
-                    if ($index !== $expectedIndex || !is_string($aud)) {
-                        throw new InvalidJwtException('Invalid "aud" value.');
-                    }
-
-                    $expectedIndex++;
-                }
-
-                $validAudiences = $this->aud;
-            } elseif (is_string($this->aud)) {
-                $validAudiences = [$this->aud];
-            } else {
-                throw new InvalidJwtException('Invalid "aud" value.');
-            }
-
-            if (!in_array($audience, $validAudiences)) {
-                throw new InvalidAudienceException('Invalid JWT audience.');
-            }
-        }
-
-        // Validate the "expires at" time constraint, if included
-        if (isset($this->exp)) {
-            if (!is_numeric($this->exp)) {
-                throw new InvalidJwtException('Invalic "exp" value.');
-            } elseif ((time() - static::$leeway) >= (float) $this->exp) {
-                throw new ExpiredJwtException('The JWT has expired.');
-            }
-        }
-
-        // Validate the "issued at" time constraint, if included
-        if (isset($this->iat)) {
-            if (!is_numeric($this->iat)) {
-                throw new InvalidJwtException('Invalid "iat" value.');
-            } elseif ((time() + static::$leeway) < (float) $this->iat) {
-                throw new BeforeValidException('The JWT is not yet valid.');
-            }
-        }
-
-        // Validate the "not before" time constraint, if included
-        if (isset($this->nbf)) {
-            if (!is_numeric($this->nbf)) {
-                throw new InvalidJwtException('Invalid "nbf" value.');
-            } elseif ((time() + static::$leeway) < (float) $this->nbf) {
-                throw new BeforeValidException('The JWT is not yet valid.');
-            }
-        }
+        $this->verifyAudClaim($audience);
+        $this->verifyExpClaim();
+        $this->verifyIatClaim();
+        $this->verifyNbfClaim();
 
         return true;
     }
@@ -483,16 +432,119 @@ abstract class JWT implements Iterator
     }
 
     /**
+     * Verify the "aud" (audience) claim, if included.
+     *
+     * @param  string|string[] $audience
+     * @return void
+     * @throws InvalidAudienceException
+     * @throws InvalidJwtException
+     */
+    protected function verifyAudClaim($audience): void
+    {
+        if (array_key_exists('aud', $this->claims)) {
+            if (is_string($audience)) {
+                $audience = [$audience];
+            }
+
+            // Make sure the audience claim is set to a valid value
+            $foundAudience = is_string($this->aud) ? [$this->aud] : $this->aud;
+
+            if (is_array($foundAudience)) {
+                $expectedIndex = 0;
+
+                foreach ($foundAudience as $index => $value) {
+                    if ($index !== $expectedIndex || !is_string($value)) {
+                        throw new InvalidJwtException('Invalid "aud" value.');
+                    }
+
+                    $expectedIndex++;
+                }
+            } else {
+                throw new InvalidJwtException('Invalid "aud" value.');
+            }
+
+            // Make sure the JWT is intended for any of the expected audiences
+            foreach ($audience as $expectedAudience) {
+                if (in_array($expectedAudience, $foundAudience)) {
+                    return;
+                }
+            }
+
+            throw new InvalidAudienceException('Invalid JWT audience.');
+        }
+    }
+
+    /**
+     * Verify the "exp" (expiration time) claim, if included.
+     *
+     * @return void
+     * @throws ExpiredJwtException
+     * @throws InvalidJwtException
+     */
+    protected function verifyExpClaim(): void
+    {
+        if (array_key_exists('exp', $this->claims)) {
+            if (is_numeric($this->exp)) {
+                if ($this->exp < (time() - static::$leeway)) {
+                    throw new ExpiredJwtException('The JWT has expired.');
+                }
+            } else {
+                throw new InvalidJwtException('Invalid "exp" value.');
+            }
+        }
+    }
+
+    /**
+     * Verify the "iat" (issued at) claim, if included.
+     *
+     * @return void
+     * @throws BeforeValidException
+     * @throws InvalidJwtException
+     */
+    protected function verifyIatClaim(): void
+    {
+        if (array_key_exists('iat', $this->claims)) {
+            if (is_numeric($this->iat)) {
+                if ($this->iat > (time() + static::$leeway)) {
+                    throw new BeforeValidException('The JWT is not yet valid.');
+                }
+            } else {
+                throw new InvalidJwtException('Invalid "iat" value.');
+            }
+        }
+    }
+
+    /**
+     * Verify the "nbf" (not before) claim, if included.
+     *
+     * @return void
+     * @throws BeforeValidException
+     * @throws InvalidJwtException
+     */
+    protected function verifyNbfClaim(): void
+    {
+        if (array_key_exists('nbf', $this->claims)) {
+            if (is_numeric($this->nbf)) {
+                if ($this->nbf > (time() + static::$leeway)) {
+                    throw new BeforeValidException('The JWT is not yet valid.');
+                }
+            } else {
+                throw new InvalidJwtException('Invalid "nbf" value.');
+            }
+        }
+    }
+
+    /**
      * Verify the JWT's signature using a given key.
      *
      * @param  mixed  $key
      * @param  string $dataToSign
      * @param  string $signature
-     * @return bool
+     * @return void
      * @throws DomainException
-     * @throws RuntimeException
+     * @throws InvalidSignatureException
      */
-    protected function verifySignature($key, string $dataToSign, string $signature): bool
+    protected function verifySignature($key, string $dataToSign, string $signature): void
     {
         $method = 'verifyWith' . $this->algorithm;
 
@@ -505,11 +557,9 @@ abstract class JWT implements Iterator
             [$key, $dataToSign, $signature]
         );
 
-        if (!is_bool($verified)) {
-            throw new RuntimeException(sprintf('Invalid return value given from "%s".', $method));
+        if ($verified !== true) {
+            throw new InvalidSignatureException('Invalid JWT signature.');
         }
-
-        return $verified;
     }
 
     /**
