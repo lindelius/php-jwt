@@ -5,7 +5,7 @@ namespace Lindelius\JWT\Algorithm\RSA;
 use Lindelius\JWT\Exception\InvalidKeyException;
 
 /**
- * Trait RS256
+ * A trait for enabling support of the "RS256" algorithm.
  */
 trait RS256
 {

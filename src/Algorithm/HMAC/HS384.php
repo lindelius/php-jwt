@@ -5,7 +5,7 @@ namespace Lindelius\JWT\Algorithm\HMAC;
 use Lindelius\JWT\Exception\InvalidKeyException;
 
 /**
- * Trait HS384
+ * A trait for enabling support of the "HS384" algorithm.
  */
 trait HS384
 {

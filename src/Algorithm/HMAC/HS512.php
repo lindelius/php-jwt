@@ -5,7 +5,7 @@ namespace Lindelius\JWT\Algorithm\HMAC;
 use Lindelius\JWT\Exception\InvalidKeyException;
 
 /**
- * Trait HS512
+ * A trait for enabling support of the "HS512" algorithm.
  */
 trait HS512
 {
