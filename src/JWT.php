@@ -9,6 +9,7 @@ use Lindelius\JWT\Exception\DomainException;
 use Lindelius\JWT\Exception\ExpiredJwtException;
 use Lindelius\JWT\Exception\InvalidArgumentException;
 use Lindelius\JWT\Exception\InvalidAudienceException;
+use Lindelius\JWT\Exception\InvalidIssuerException;
 use Lindelius\JWT\Exception\InvalidJwtException;
 use Lindelius\JWT\Exception\InvalidSignatureException;
 use Lindelius\JWT\Exception\JsonException;
@@ -293,15 +294,15 @@ abstract class JWT implements Iterator
      * Verify that the JWT is correctly formatted and that the given signature
      * is valid.
      *
-     * @param  mixed       $key
-     * @param  string|null $audience
+     * @param  mixed $key
+     * @param  array $expectedClaims
      * @return bool
      * @throws DomainException
      * @throws InvalidJwtException
      * @throws JsonException
      * @throws RuntimeException
      */
-    public function verify($key, ?string $audience = null): bool
+    public function verify($key, array $expectedClaims = []): bool
     {
         $segments = explode('.', $this->hash ?: '');
 
@@ -327,10 +328,17 @@ abstract class JWT implements Iterator
 
         $this->verifySignature($key, $dataToSign, $signature);
 
-        $this->verifyAudClaim($audience);
         $this->verifyExpClaim();
         $this->verifyIatClaim();
         $this->verifyNbfClaim();
+
+        if (array_key_exists('aud', $expectedClaims)) {
+            $this->verifyAudClaim($expectedClaims['aud']);
+        }
+
+        if (array_key_exists('iss', $expectedClaims)) {
+            $this->verifyIssClaim($expectedClaims['iss']);
+        }
 
         return true;
     }
@@ -503,6 +511,29 @@ abstract class JWT implements Iterator
                 }
             } else {
                 throw new InvalidJwtException('Invalid "iat" value.');
+            }
+        }
+    }
+
+    /**
+     * Verify the "iss" (issuer) claim, if included.
+     *
+     * @param  string|string[] $issuer
+     * @return void
+     * @throws InvalidIssuerException
+     * @throws InvalidJwtException
+     */
+    protected function verifyIssClaim($issuer): void
+    {
+        if (array_key_exists('iss', $this->claims)) {
+            if (is_string($this->iss)) {
+                $issuer = is_array($issuer) ? $issuer : [$issuer];
+
+                if (!in_array($this->iss, $issuer)) {
+                    throw new InvalidIssuerException('Invalid JWT issuer.');
+                }
+            } else {
+                throw new InvalidJwtException('Invalid "iss" value.');
             }
         }
     }

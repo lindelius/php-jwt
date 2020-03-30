@@ -7,6 +7,7 @@ This library conforms to [RFC 7519](https://tools.ietf.org/html/rfc7519), with t
 - `aud` - The audience(s) for which the token is valid
 - `exp` - The token's expiration date
 - `iat` - The token's issue date 
+- `iss` - The issuer of the token
 - `nbf` - The token's "not before" date
 
 ## Requirements
@@ -119,7 +120,7 @@ $jwt->aud = [
 When you verify the JWT, just pass the current audience as the second parameter to the `JWT::verify()` method and it will validate it for you.
 
 ```php
-$decodedJwt->verify(DECODE_KEY, $currentAudience);
+$decodedJwt->verify(DECODE_KEY, ['aud' => $currentAudience]);
 ```
 
 #### Leeway Time

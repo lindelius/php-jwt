@@ -38,7 +38,7 @@ class AudClaimTest extends TestCase
     }
 
     /**
-     * @param mixed $aud
+     * @param  mixed $aud
      * @throws \Lindelius\JWT\Exception\Exception
      * @throws \RuntimeException
      * @expectedException \Lindelius\JWT\Exception\InvalidJwtException
@@ -51,7 +51,7 @@ class AudClaimTest extends TestCase
         $jwt->setClaim('aud', $aud);
 
         $decodedJwt = TestJWT::decode($jwt->encode('my_key'));
-        $decodedJwt->verify('my_key', 'https://myapp.tld');
+        $decodedJwt->verify('my_key', ['aud' => 'https://myapp.tld']);
     }
 
     /**
@@ -61,7 +61,7 @@ class AudClaimTest extends TestCase
     public function testDecodeWithInvalidAudience()
     {
         $decodedJwt = TestJWT::decode('eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJhdWQiOiJodHRwczpcL1wvbXlhcHAudGxkIn0.kfXUmztf59REc6YAHNS7J1SleE_ufiWK7bTgSqM_buo');
-        $decodedJwt->verify('my_key', 'https://unknownapp.tld');
+        $decodedJwt->verify('my_key', ['aud' => 'https://unknownapp.tld']);
     }
 
     /**
@@ -71,7 +71,7 @@ class AudClaimTest extends TestCase
     public function testDecodeWithInvalidAudienceAmongSeveral()
     {
         $decodedJwt = TestJWT::decode('eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJhdWQiOlsiaHR0cHM6XC9cL215YXBwLnRsZCIsImh0dHBzOlwvXC95b3VyYXBwLnRsZCJdfQ.Yxa674OTihi3i3pp00DEa_BAPMmcIgTwQmbEaN-sNfA');
-        $decodedJwt->verify('my_key', 'https://unknownapp.tld');
+        $decodedJwt->verify('my_key', ['aud' => 'https://unknownapp.tld']);
     }
 
     /**
@@ -83,7 +83,7 @@ class AudClaimTest extends TestCase
     {
         $decodedJwt = TestJWT::decode('eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJhdWQiOiJodHRwczpcL1wvbXlhcHAudGxkIn0.kfXUmztf59REc6YAHNS7J1SleE_ufiWK7bTgSqM_buo');
 
-        $this->assertEquals(true, $decodedJwt->verify('my_key', 'https://myapp.tld'));
+        $this->assertEquals(true, $decodedJwt->verify('my_key', ['aud' => 'https://myapp.tld']));
     }
 
     /**
@@ -95,6 +95,6 @@ class AudClaimTest extends TestCase
     {
         $decodedJwt = TestJWT::decode('eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJhdWQiOlsiaHR0cHM6XC9cL215YXBwLnRsZCIsImh0dHBzOlwvXC95b3VyYXBwLnRsZCJdfQ.Yxa674OTihi3i3pp00DEa_BAPMmcIgTwQmbEaN-sNfA');
 
-        $this->assertEquals(true, $decodedJwt->verify('my_key', 'https://myapp.tld'));
+        $this->assertEquals(true, $decodedJwt->verify('my_key', ['aud' => 'https://myapp.tld']));
     }
 }
