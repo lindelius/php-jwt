@@ -442,25 +442,18 @@ abstract class JWT implements Iterator
     protected function verifyAudClaim($audience): void
     {
         if (array_key_exists('aud', $this->claims)) {
-            if (is_string($audience)) {
-                $audience = [$audience];
-            }
+            $audience = is_array($audience) ? $audience : [$audience];
 
             // Make sure the audience claim is set to a valid value
-            $foundAudience = is_string($this->aud) ? [$this->aud] : $this->aud;
+            $foundAudience = is_array($this->aud) ? $this->aud : [$this->aud];
+            $expectedIndex = 0;
 
-            if (is_array($foundAudience)) {
-                $expectedIndex = 0;
-
-                foreach ($foundAudience as $index => $value) {
-                    if ($index !== $expectedIndex || !is_string($value)) {
-                        throw new InvalidJwtException('Invalid "aud" value.');
-                    }
-
+            foreach ($foundAudience as $index => $value) {
+                if (is_string($value) && $index === $expectedIndex) {
                     $expectedIndex++;
+                } else {
+                    throw new InvalidJwtException('Invalid "aud" value.');
                 }
-            } else {
-                throw new InvalidJwtException('Invalid "aud" value.');
             }
 
             // Make sure the JWT is intended for any of the expected audiences
