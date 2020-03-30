@@ -3,8 +3,8 @@
 namespace Lindelius\JWT\Exception;
 
 /**
- * An exception thrown when a JWT is being used earlier than its "not before"
- * claim allows it to be.
+ * An exception thrown when attempting to verify a JWT earlier than what is
+ * allowed by its "nbf" (not before) or "iat" (issued at) claim.
  */
 class BeforeValidException extends InvalidJwtException
 {

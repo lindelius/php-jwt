@@ -4,16 +4,12 @@ namespace Lindelius\JWT;
 
 use Iterator;
 use Lindelius\JWT\Exception\BeforeValidException;
-use Lindelius\JWT\Exception\DomainException;
 use Lindelius\JWT\Exception\ExpiredJwtException;
-use Lindelius\JWT\Exception\InvalidArgumentException;
-use Lindelius\JWT\Exception\InvalidAudienceException;
-use Lindelius\JWT\Exception\InvalidIssuerException;
 use Lindelius\JWT\Exception\InvalidJwtException;
 use Lindelius\JWT\Exception\InvalidKeyException;
 use Lindelius\JWT\Exception\InvalidSignatureException;
-use Lindelius\JWT\Exception\JsonException;
-use Lindelius\JWT\Exception\RuntimeException;
+use Lindelius\JWT\Exception\JwtException;
+use Lindelius\JWT\Exception\UnsupportedAlgorithmException;
 
 /**
  * An abstract base class for JWT models.
@@ -36,7 +32,7 @@ abstract class JWT implements Iterator
     public static $leeway = 0;
 
     /**
-     * The hashing algorithm to use when encoding the JWT.
+     * The algorithm to use when signing the JWT.
      *
      * @var string|null
      */
@@ -139,9 +135,8 @@ abstract class JWT implements Iterator
      *
      * @param  mixed $key
      * @return string
-     * @throws DomainException
-     * @throws JsonException
-     * @throws RuntimeException
+     * @throws JwtException
+     * @throws UnsupportedAlgorithmException
      */
     public function encode($key): string
     {
@@ -297,17 +292,19 @@ abstract class JWT implements Iterator
      * @param  mixed $key
      * @param  array $expectedClaims
      * @return bool
-     * @throws DomainException
+     * @throws BeforeValidException
+     * @throws ExpiredJwtException
      * @throws InvalidJwtException
-     * @throws JsonException
-     * @throws RuntimeException
+     * @throws InvalidKeyException
+     * @throws InvalidSignatureException
+     * @throws UnsupportedAlgorithmException
      */
     public function verify($key, array $expectedClaims = []): bool
     {
         $segments = explode('.', $this->hash ?: '');
 
         if (count($segments) !== 3) {
-            throw new InvalidSignatureException('Unable to verify the signature due to an invalid JWT hash.');
+            throw new InvalidJwtException('Unable to verify the signature due to an invalid JWT hash.');
         }
 
         $this->verifySignature(
@@ -337,6 +334,7 @@ abstract class JWT implements Iterator
      * @param  string $hash
      * @return void
      * @throws InvalidJwtException
+     * @throws JwtException
      */
     public function decodeAndInitialize(string $hash): void
     {
@@ -366,13 +364,13 @@ abstract class JWT implements Iterator
         if (is_object($claims)) {
             $claims = (array) $claims;
         } elseif (!is_array($claims)) {
-            throw new InvalidArgumentException('Invalid set of JWT claims.');
+            throw new InvalidJwtException('Invalid set of JWT claims.');
         }
 
         if (is_object($header)) {
             $header = (array) $header;
         } elseif (!is_array($header)) {
-            throw new InvalidArgumentException('Invalid JWT header.');
+            throw new InvalidJwtException('Invalid JWT header.');
         }
 
         // Populate the JWT with the decoded data
@@ -394,6 +392,7 @@ abstract class JWT implements Iterator
      * @param  mixed $key
      * @return mixed
      * @throws InvalidJwtException
+     * @throws InvalidKeyException
      */
     protected function findDecodeKey($key)
     {
@@ -420,15 +419,15 @@ abstract class JWT implements Iterator
      * @param  mixed  $key
      * @param  string $dataToSign
      * @return string
-     * @throws DomainException
-     * @throws RuntimeException
+     * @throws JwtException
+     * @throws UnsupportedAlgorithmException
      */
     protected function generateSignature($key, string $dataToSign): string
     {
         $method = 'encodeWith' . $this->algorithm;
 
         if (!method_exists($this, $method)) {
-            throw new DomainException('Unsupported hashing algorithm.');
+            throw new UnsupportedAlgorithmException(sprintf('Unsupported algorithm ("%s").', $this->algorithm));
         }
 
         $signature = call_user_func_array(
@@ -437,7 +436,7 @@ abstract class JWT implements Iterator
         );
 
         if (empty($signature) || !is_string($signature)) {
-            throw new RuntimeException('Unable to sign the JWT.');
+            throw new JwtException('Unable to sign the JWT.');
         }
 
         return $signature;
@@ -448,7 +447,6 @@ abstract class JWT implements Iterator
      *
      * @param  string|string[] $audience
      * @return void
-     * @throws InvalidAudienceException
      * @throws InvalidJwtException
      */
     protected function verifyAudClaim($audience): void
@@ -475,7 +473,7 @@ abstract class JWT implements Iterator
                 }
             }
 
-            throw new InvalidAudienceException('Invalid JWT audience.');
+            throw new InvalidJwtException('Invalid JWT audience.');
         }
     }
 
@@ -524,7 +522,6 @@ abstract class JWT implements Iterator
      *
      * @param  string|string[] $issuer
      * @return void
-     * @throws InvalidIssuerException
      * @throws InvalidJwtException
      */
     protected function verifyIssClaim($issuer): void
@@ -534,7 +531,7 @@ abstract class JWT implements Iterator
                 $issuer = is_array($issuer) ? $issuer : [$issuer];
 
                 if (!in_array($this->claims['iss'], $issuer)) {
-                    throw new InvalidIssuerException('Invalid JWT issuer.');
+                    throw new InvalidJwtException('Invalid JWT issuer.');
                 }
             } else {
                 throw new InvalidJwtException('Invalid "iss" value.');
@@ -569,15 +566,15 @@ abstract class JWT implements Iterator
      * @param  string $dataToSign
      * @param  string $signature
      * @return void
-     * @throws DomainException
      * @throws InvalidSignatureException
+     * @throws UnsupportedAlgorithmException
      */
     protected function verifySignature($key, string $dataToSign, string $signature): void
     {
         $method = 'verifyWith' . $this->algorithm;
 
         if (!method_exists($this, $method)) {
-            throw new DomainException('Unsupported hashing algorithm.');
+            throw new UnsupportedAlgorithmException(sprintf('Unsupported algorithm ("%s").', $this->algorithm));
         }
 
         $verified = call_user_func_array(
@@ -611,6 +608,7 @@ abstract class JWT implements Iterator
      * @param  string $hash
      * @return static
      * @throws InvalidJwtException
+     * @throws JwtException
      */
     public static function decode(string $hash)
     {
@@ -625,7 +623,7 @@ abstract class JWT implements Iterator
      *
      * @param  string $json
      * @return mixed
-     * @throws JsonException
+     * @throws JwtException
      */
     protected static function jsonDecode(string $json)
     {
@@ -633,7 +631,7 @@ abstract class JWT implements Iterator
         $error = json_last_error();
 
         if ($error !== JSON_ERROR_NONE) {
-            throw new JsonException(sprintf('Unable to decode the given JSON string (%s).', $error));
+            throw new JwtException(sprintf('Unable to decode the given JSON string (%s).', $error));
         }
 
         return $data;
@@ -644,7 +642,7 @@ abstract class JWT implements Iterator
      *
      * @param  mixed $data
      * @return string
-     * @throws JsonException
+     * @throws JwtException
      */
     protected static function jsonEncode($data): string
     {
@@ -652,7 +650,7 @@ abstract class JWT implements Iterator
         $error = json_last_error();
 
         if ($error !== JSON_ERROR_NONE) {
-            throw new JsonException(sprintf('Unable to encode the given data (%s).', $error));
+            throw new JwtException(sprintf('Unable to encode the given data (%s).', $error));
         }
 
         return $json;

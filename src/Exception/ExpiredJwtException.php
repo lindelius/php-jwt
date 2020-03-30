@@ -3,8 +3,8 @@
 namespace Lindelius\JWT\Exception;
 
 /**
- * An exception thrown when a JWT is being used later than its "expiration"
- * claim allows it to be.
+ * An exception thrown when attempting to verify a JWT later than what is
+ * allowed by its "exp" (expiration time) claim.
  */
 class ExpiredJwtException extends InvalidJwtException
 {

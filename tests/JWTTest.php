@@ -13,9 +13,9 @@ class JWTTest extends TestCase
     use TestDataProviders;
 
     /**
-     * @throws \Lindelius\JWT\Exception\Exception
-     * @expectedException \Lindelius\Jwt\Exception\DomainException
-     * @expectedExceptionMessage Unsupported hashing algorithm.
+     * @throws \Lindelius\JWT\Exception\JwtException
+     * @expectedException \Lindelius\Jwt\Exception\JwtException
+     * @expectedExceptionMessage Unsupported algorithm ("ABC123").
      */
     public function testCreateWithUnsupportedAlgorithm()
     {
@@ -24,9 +24,9 @@ class JWTTest extends TestCase
     }
 
     /**
-     * @throws \Lindelius\JWT\Exception\Exception
-     * @expectedException \Lindelius\Jwt\Exception\DomainException
-     * @expectedExceptionMessage Unsupported hashing algorithm.
+     * @throws \Lindelius\JWT\Exception\JwtException
+     * @expectedException \Lindelius\Jwt\Exception\JwtException
+     * @expectedExceptionMessage Unsupported algorithm ("ABC123").
      */
     public function testDecodeWithUnsupportedAlgorithm()
     {
@@ -36,7 +36,7 @@ class JWTTest extends TestCase
 
     /**
      * @param  mixed $key
-     * @throws \Lindelius\JWT\Exception\Exception
+     * @throws \Lindelius\JWT\Exception\JwtException
      * @expectedException \Lindelius\JWT\Exception\InvalidJwtException
      * @expectedExceptionMessage Invalid key.
      * @dataProvider             invalidKeyProvider
@@ -49,7 +49,7 @@ class JWTTest extends TestCase
 
     /**
      * @param  mixed $key
-     * @throws \Lindelius\JWT\Exception\Exception
+     * @throws \Lindelius\JWT\Exception\JwtException
      * @expectedException \Lindelius\JWT\Exception\InvalidJwtException
      * @expectedExceptionMessage Invalid key.
      * @dataProvider             invalidKeyProvider
@@ -63,7 +63,7 @@ class JWTTest extends TestCase
 
     /**
      * @param  mixed $algorithm
-     * @throws \Lindelius\JWT\Exception\Exception
+     * @throws \Lindelius\JWT\Exception\JwtException
      * @expectedException \TypeError
      * @dataProvider invalidAlgorithmProvider
      */
@@ -74,9 +74,9 @@ class JWTTest extends TestCase
     }
 
     /**
-     * @throws \Lindelius\JWT\Exception\Exception
-     * @expectedException \Lindelius\JWT\Exception\DomainException
-     * @expectedExceptionMessage Unsupported hashing algorithm.
+     * @throws \Lindelius\JWT\Exception\JwtException
+     * @expectedException \Lindelius\JWT\Exception\JwtException
+     * @expectedExceptionMessage Unsupported algorithm ("1337").
      */
     public function testDecodeWithInvalidAlgorithm()
     {
@@ -86,7 +86,7 @@ class JWTTest extends TestCase
 
     /**
      * @param  mixed $hash
-     * @throws \Lindelius\JWT\Exception\Exception
+     * @throws \Lindelius\JWT\Exception\JwtException
      * @expectedException \TypeError
      * @dataProvider invalidHashProvider
      */
@@ -96,7 +96,7 @@ class JWTTest extends TestCase
     }
 
     /**
-     * @throws \Lindelius\JWT\Exception\Exception
+     * @throws \Lindelius\JWT\Exception\JwtException
      * @expectedException \Lindelius\JWT\Exception\InvalidJwtException
      * @expectedExceptionMessage Unexpected number of JWT segments.
      */
@@ -106,7 +106,7 @@ class JWTTest extends TestCase
     }
 
     /**
-     * @throws \Lindelius\JWT\Exception\Exception
+     * @throws \Lindelius\JWT\Exception\JwtException
      * @expectedException \Lindelius\JWT\Exception\InvalidJwtException
      * @expectedExceptionMessage Unable to find the correct decode key.
      */
@@ -123,7 +123,7 @@ class JWTTest extends TestCase
     }
 
     /**
-     * @throws \Lindelius\JWT\Exception\Exception
+     * @throws \Lindelius\JWT\Exception\JwtException
      * @throws \RuntimeException
      * @throws \SebastianBergmann\RecursionContext\Exception
      */
@@ -140,7 +140,7 @@ class JWTTest extends TestCase
     }
 
     /**
-     * @throws \Lindelius\JWT\Exception\Exception
+     * @throws \Lindelius\JWT\Exception\JwtException
      * @throws \RuntimeException
      * @throws \SebastianBergmann\RecursionContext\Exception
      */
@@ -157,7 +157,7 @@ class JWTTest extends TestCase
     }
 
     /**
-     * @throws \Lindelius\JWT\Exception\Exception
+     * @throws \Lindelius\JWT\Exception\JwtException
      * @throws \RuntimeException
      * @throws \SebastianBergmann\RecursionContext\Exception
      */
@@ -174,7 +174,7 @@ class JWTTest extends TestCase
     }
 
     /**
-     * @throws \Lindelius\JWT\Exception\Exception
+     * @throws \Lindelius\JWT\Exception\JwtException
      * @throws \RuntimeException
      * @throws \SebastianBergmann\RecursionContext\Exception
      */
@@ -198,7 +198,7 @@ class JWTTest extends TestCase
     }
 
     /**
-     * @throws \Lindelius\JWT\Exception\Exception
+     * @throws \Lindelius\JWT\Exception\JwtException
      * @throws \RuntimeException
      * @throws \SebastianBergmann\RecursionContext\Exception
      */
@@ -222,7 +222,7 @@ class JWTTest extends TestCase
     }
 
     /**
-     * @throws \Lindelius\JWT\Exception\Exception
+     * @throws \Lindelius\JWT\Exception\JwtException
      * @throws \RuntimeException
      * @throws \SebastianBergmann\RecursionContext\Exception
      */
@@ -246,7 +246,7 @@ class JWTTest extends TestCase
     }
 
     /**
-     * @throws \Lindelius\JWT\Exception\Exception
+     * @throws \Lindelius\JWT\Exception\JwtException
      * @throws \RuntimeException
      * @throws \SebastianBergmann\RecursionContext\Exception
      */
@@ -259,7 +259,7 @@ class JWTTest extends TestCase
     }
 
     /**
-     * @throws \Lindelius\JWT\Exception\Exception
+     * @throws \Lindelius\JWT\Exception\JwtException
      * @throws \RuntimeException
      * @expectedException \Lindelius\JWT\Exception\InvalidSignatureException
      */
@@ -270,9 +270,9 @@ class JWTTest extends TestCase
     }
 
     /**
-     * @throws \Lindelius\JWT\Exception\Exception
+     * @throws \Lindelius\JWT\Exception\JwtException
      * @throws \RuntimeException
-     * @expectedException \Lindelius\JWT\Exception\JsonException
+     * @expectedException \Lindelius\JWT\Exception\JwtException
      * @expectedExceptionMessage Unable to decode the given JSON string
      */
     public function testDecodeTokenWithInvalidJson()

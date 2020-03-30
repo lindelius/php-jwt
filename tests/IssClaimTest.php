@@ -30,7 +30,7 @@ class IssClaimTest extends TestCase
 
     /**
      * @param  mixed $iss
-     * @throws \Lindelius\JWT\Exception\Exception
+     * @throws \Lindelius\JWT\Exception\JwtException
      * @throws \RuntimeException
      * @expectedException \Lindelius\JWT\Exception\InvalidJwtException
      * @expectedExceptionMessage Invalid "iss" value.
@@ -46,8 +46,8 @@ class IssClaimTest extends TestCase
     }
 
     /**
-     * @throws \Lindelius\JWT\Exception\Exception
-     * @expectedException \Lindelius\JWT\Exception\InvalidIssuerException
+     * @throws \Lindelius\JWT\Exception\JwtException
+     * @expectedException \Lindelius\JWT\Exception\InvalidJwtException
      */
     public function testDecodeWithInvalidIssuer()
     {
@@ -59,8 +59,8 @@ class IssClaimTest extends TestCase
     }
 
     /**
-     * @throws \Lindelius\JWT\Exception\Exception
-     * @expectedException \Lindelius\JWT\Exception\InvalidIssuerException
+     * @throws \Lindelius\JWT\Exception\JwtException
+     * @expectedException \Lindelius\JWT\Exception\InvalidJwtException
      */
     public function testDecodeWithInvalidIssuerAmongSeveral()
     {
@@ -72,7 +72,7 @@ class IssClaimTest extends TestCase
     }
 
     /**
-     * @throws \Lindelius\JWT\Exception\Exception
+     * @throws \Lindelius\JWT\Exception\JwtException
      * @throws \RuntimeException
      * @throws \SebastianBergmann\RecursionContext\Exception
      */
@@ -86,7 +86,7 @@ class IssClaimTest extends TestCase
     }
 
     /**
-     * @throws \Lindelius\JWT\Exception\Exception
+     * @throws \Lindelius\JWT\Exception\JwtException
      * @throws \RuntimeException
      * @throws \SebastianBergmann\RecursionContext\Exception
      */

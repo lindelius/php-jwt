@@ -11,7 +11,7 @@ use PHPUnit\Framework\TestCase;
 class ExpClaimTest extends TestCase
 {
     /**
-     * @throws \Lindelius\JWT\Exception\Exception
+     * @throws \Lindelius\JWT\Exception\JwtException
      * @throws \RuntimeException
      * @throws \SebastianBergmann\RecursionContext\Exception
      */
@@ -27,7 +27,7 @@ class ExpClaimTest extends TestCase
     }
 
     /**
-     * @throws \Lindelius\JWT\Exception\Exception
+     * @throws \Lindelius\JWT\Exception\JwtException
      * @expectedException \Lindelius\JWT\Exception\ExpiredJwtException
      */
     public function testDecodeWithExpOutsideOfLeewayTime()

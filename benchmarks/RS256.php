@@ -2,7 +2,7 @@
 
 namespace Lindelius\JWT\Benchmarks;
 
-use Lindelius\JWT\Exception\Exception as JwtException;
+use Lindelius\JWT\Exception\JwtException;
 
 /**
  * Class RS256

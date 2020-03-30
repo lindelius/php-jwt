@@ -39,7 +39,7 @@ class AudClaimTest extends TestCase
 
     /**
      * @param  mixed $aud
-     * @throws \Lindelius\JWT\Exception\Exception
+     * @throws \Lindelius\JWT\Exception\JwtException
      * @throws \RuntimeException
      * @expectedException \Lindelius\JWT\Exception\InvalidJwtException
      * @expectedExceptionMessage Invalid "aud" value.
@@ -55,8 +55,8 @@ class AudClaimTest extends TestCase
     }
 
     /**
-     * @throws \Lindelius\JWT\Exception\Exception
-     * @expectedException \Lindelius\JWT\Exception\InvalidAudienceException
+     * @throws \Lindelius\JWT\Exception\JwtException
+     * @expectedException \Lindelius\JWT\Exception\InvalidJwtException
      */
     public function testDecodeWithInvalidAudience()
     {
@@ -65,8 +65,8 @@ class AudClaimTest extends TestCase
     }
 
     /**
-     * @throws \Lindelius\JWT\Exception\Exception
-     * @expectedException \Lindelius\JWT\Exception\InvalidAudienceException
+     * @throws \Lindelius\JWT\Exception\JwtException
+     * @expectedException \Lindelius\JWT\Exception\InvalidJwtException
      */
     public function testDecodeWithInvalidAudienceAmongSeveral()
     {
@@ -75,7 +75,7 @@ class AudClaimTest extends TestCase
     }
 
     /**
-     * @throws \Lindelius\JWT\Exception\Exception
+     * @throws \Lindelius\JWT\Exception\JwtException
      * @throws \RuntimeException
      * @throws \SebastianBergmann\RecursionContext\Exception
      */
@@ -87,7 +87,7 @@ class AudClaimTest extends TestCase
     }
 
     /**
-     * @throws \Lindelius\JWT\Exception\Exception
+     * @throws \Lindelius\JWT\Exception\JwtException
      * @throws \RuntimeException
      * @throws \SebastianBergmann\RecursionContext\Exception
      */

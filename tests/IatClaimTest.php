@@ -11,7 +11,7 @@ use PHPUnit\Framework\TestCase;
 class IatClaimTest extends TestCase
 {
     /**
-     * @throws \Lindelius\JWT\Exception\Exception
+     * @throws \Lindelius\JWT\Exception\JwtException
      * @throws \RuntimeException
      * @throws \SebastianBergmann\RecursionContext\Exception
      */
@@ -27,7 +27,7 @@ class IatClaimTest extends TestCase
     }
 
     /**
-     * @throws \Lindelius\JWT\Exception\Exception
+     * @throws \Lindelius\JWT\Exception\JwtException
      * @throws \RuntimeException
      * @expectedException \Lindelius\JWT\Exception\BeforeValidException
      */

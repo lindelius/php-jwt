@@ -161,7 +161,7 @@ $decodedJwt->verify($keys);
 
 ### Exceptions
 
-This library throws a variety of different exceptions in order to allow for different actions to be taken depending on what exactly it was that went wrong. However, all of these exceptions implements the `Lindelius\JWT\Exception\Exception` interface, making it possible to catch **any** exception thrown by this library without having to list all of them.
+This library throws a variety of different exceptions in order to allow for different actions to be taken depending on what exactly it was that went wrong. However, all of these exceptions extends `Lindelius\JWT\Exception\JwtException`, making it possible to catch **any** exception thrown by this library without having to list all of them.
 
 ```php
 try {
@@ -169,7 +169,7 @@ try {
     $jwt = MyJWT::decode($encodedJwt);
     $jwt->verify(DECODE_KEY);
 
-} catch (\Lindelius\JWT\Exception\Exception $exception) {
+} catch (\Lindelius\JWT\Exception\JwtException $exception) {
     // This catches any exception thrown by the library
 }
 ```
