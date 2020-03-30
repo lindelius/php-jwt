@@ -489,7 +489,7 @@ abstract class JWT implements Iterator
     protected function verifyExpClaim(): void
     {
         if (array_key_exists('exp', $this->claims)) {
-            if (is_numeric($this->claims['exp'])) {
+            if (strval($this->claims['exp']) == intval($this->claims['exp'])) {
                 if ($this->claims['exp'] < (time() - static::$leeway)) {
                     throw new ExpiredJwtException('The JWT has expired.');
                 }
@@ -509,7 +509,7 @@ abstract class JWT implements Iterator
     protected function verifyIatClaim(): void
     {
         if (array_key_exists('iat', $this->claims)) {
-            if (is_numeric($this->claims['iat'])) {
+            if (strval($this->claims['iat']) == intval($this->claims['iat'])) {
                 if ($this->claims['iat'] > (time() + static::$leeway)) {
                     throw new BeforeValidException('The JWT is not yet valid.');
                 }
@@ -552,7 +552,7 @@ abstract class JWT implements Iterator
     protected function verifyNbfClaim(): void
     {
         if (array_key_exists('nbf', $this->claims)) {
-            if (is_numeric($this->claims['nbf'])) {
+            if (strval($this->claims['nbf']) == intval($this->claims['nbf'])) {
                 if ($this->claims['nbf'] > (time() + static::$leeway)) {
                     throw new BeforeValidException('The JWT is not yet valid.');
                 }
