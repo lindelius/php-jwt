@@ -4,11 +4,11 @@ A convenience library for working with JSON Web Tokens (JWT) in PHP.
 
 This library conforms to [RFC 7519](https://tools.ietf.org/html/rfc7519), with the exception of not allowing unsigned JWTs (the "none" algorithm), and has built-in support for the following claims:
 
-- `aud` - The audience(s) for which the token is valid
-- `exp` - The token's expiration date
-- `iat` - The token's issue date 
-- `iss` - The issuer of the token
-- `nbf` - The token's "not before" date
+- The `aud` (audience) claim - [Section 4.1.3](https://tools.ietf.org/html/rfc7519#section-4.1.3)
+- The `exp` (expiration time) claim - [Section 4.1.4](https://tools.ietf.org/html/rfc7519#section-4.1.4)
+- The `iat` (issued at) claim - [Section 4.1.6](https://tools.ietf.org/html/rfc7519#section-4.1.6)
+- The `iss` (issuer) claim - [Section 4.1.1](https://tools.ietf.org/html/rfc7519#section-4.1.1)
+- The `nbf` (not before) claim - [Section 4.1.5](https://tools.ietf.org/html/rfc7519#section-4.1.5)
 
 ## Requirements
 
@@ -19,12 +19,10 @@ This library conforms to [RFC 7519](https://tools.ietf.org/html/rfc7519), with t
 
 - [Installation](#installation)
 - [Usage](#usage)
-    - [Advanced Usage](#advanced-usage)
-        - [Algorithm Choices](#algorithm-choices)
-        - [Audiences](#audiences)
-        - [Leeway Time](#leeway-time)
-        - [Multiple Encryption Keys](#multiple-encryption-keys)
-    - [Exceptions](#exceptions)
+    - [Algorithm Choices](#algorithm-choices)
+    - [Audiences](#audiences)
+    - [Leeway Time](#leeway-time)
+    - [Multiple Encryption Keys](#multiple-encryption-keys)
 - [Benchmarking](#benchmarking)
 
 ## Installation
@@ -32,13 +30,12 @@ This library conforms to [RFC 7519](https://tools.ietf.org/html/rfc7519), with t
 In order to install this library, issue the following command from your project's root folder:
 
 ```
-composer require "lindelius/php-jwt=^0.8"
+composer require "lindelius/php-jwt=^0.9"
 ```
 
 ## Usage
 
-The following is a very basic example of how to issue JWTs with this library:
-
+Since this library is taking an OOP approach to JWT management, the first step is, unsurprisingly, to create a JWT model. All you have to do, though, is to extend the abstract `Lindelius\JWT\JWT` class and pick an algorithm, and you're good to go.
 ```php
 use Lindelius\JWT\Algorithm\HMAC\HS256;
 use Lindelius\JWT\JWT;
@@ -47,39 +44,40 @@ class MyJWT extends JWT
 {
     use HS256;
 }
-
-$jwt = new MyJWT('HS256');
-
-$jwt->exp = time() + (60 * 20); // Expire after 20 minutes
-$jwt->iat = time();
-$jwt->sub = $user->id;
-
-$accessToken = $jwt->encode(ENCODE_KEY);
 ```
 
-After a JWT has been issued by your PHP application it should be included in all future requests (to secured endpoints) by the application making the requests. It is up to you to decide how the JWT should be included, but it is usually done via the "Authorization" header.
+The next step is to start using the JWT model to create JWTs.
 
-```
-Authorization: Bearer My.Jwt.Token
+Surprisingly quick and easy, wasn't it?
+
+```php
+$jwt = MyJWT::create('HS256');
+
+// Include whatever data is required by your use case
+$jwt->field = 'value';
+$jwt->other = ['field' => 'value'];
+
+// Let the JWT expire after 20 minutes (optional, but recommended)
+$jwt->exp = time() + (60 * 20);
+
+// Encode the JWT using a key suitable for the chosen algorithm
+$encodedJwt = $jwt->encode('SOME_RANDOM_HMAC_KEY');
 ```
 
-For all secured endpoints you need to verify that a JWT is included and that it is valid. You can do so by using the included `JWT::decode()` and `JWT::verify()` methods.
+The final step (unless your application is not actually consuming any JWTs, then the previous step was the last one) is to decode and verify the JWTs that you are given.
 
 ```php
 $decodedJwt = MyJWT::decode($encodedJwt);
 
-/**
- * You can access the claims as soon as you have decoded the JWT.
- * However, NEVER trust the JWT until you have verified it!
- */
-$isAdmin = (bool) $decodedJwt->admin;
+// The data is available immediately after decode
+$field = $decodedJwt->field;
+$other = $decodedJwt->other;
 
-$decodedJwt->verify(DECODE_KEY);
+// HOWEVER, do NOT forget to verify the data before trusting it
+$decodedJwt->verify('THE_SAME_HMAC_KEY');
 ```
 
-### Advanced Usage
-
-#### Algorithm Choices
+### Algorithm Choices
 
 The following algorithms are currently included with the library:
 
@@ -90,7 +88,7 @@ The following algorithms are currently included with the library:
 - **RS384** *(requires the OpenSSL extension)*
 - **RS512** *(requires the OpenSSL extension)*
 
-You may use any of the algorithms by simply using the relevant trait in your JWT model.
+You may use any of the built-in algorithms by simply including the relevant trait(s) in your JWT model.
 
 ```php
 use Lindelius\JWT\Algorithm\RSA\RS256;
@@ -101,84 +99,59 @@ class MyJWT extends JWT
     use RS256;
 }
 
-$jwt = new MyJWT('RS256');
+$jwt = MyJWT::create('RS256');
 ```
 
-If you would like to use an algorithm that is not yet included with the library you can add support for it by creating the required `encodeWithX()` and `verifyWithX()` methods in the same fashion as the currently included traits.
+If you would like to use an algorithm that is not yet included with the library you can easily add support for it by implementing the required `encodeWithX()` and `verifyWithX()` methods (in the same fashion as the currently included traits).
 
-#### Audiences
+### Leeway Time
 
-If you would like to restrict a JWT to one or more audiences you can easily do so with the `aud` claim. When you create the JWT, set the `aud` claim to one or more audiences. If the JWT should only be valid for a single audience, you can set the value to a string. If it should be valid for more than one audience, the value must be an array of strings.
+If your application servers suffer from clock skew, you can make use of the `JWT::$leeway` property to give them a couple of extra seconds when verifying certain claims (`exp`, `iat`, and `nbf`).
 
-```php
-$jwt->aud = [
-    'https://myapp.tld',
-    'https://yourapp.tld',
-];
-```
-
-When you verify the JWT, just pass the current audience as the second parameter to the `JWT::verify()` method and it will validate it for you.
-
-```php
-$decodedJwt->verify(DECODE_KEY, ['aud' => $currentAudience]);
-```
-
-#### Leeway Time
-
-If there are time differences between your application servers, you can extend the abstract `JWT` model and make use of the `JWT::$leeway` property to give your servers some extra seconds when verifying certain claims (`iat`, `nbf`, and `exp`). The property's value should be a positive integer representing the number of extra seconds that your servers need.
+It's highly recommended to keep the leeway time as low as possible.
 
 ```php
 use Lindelius\JWT\JWT;
 
 class MyJWT extends JWT
 {
-    protected static $leeway = 90;
+    public static $leeway = 60;
 }
 ```
 
-#### Multiple Encryption Keys
+### Multiple Encryption Keys
 
-If your application supports multiple encryption keys you are going to need to specify this inside the JWT so that you can use the correct key later on when you have to verify that the JWT is valid. The correct way to do this is to use the `kid` field in the JWT header.
+If your application makes use of multiple encryption keys you will, in one way or another, have to keep track of which key was used for which JWT. One way to do this is to use the `kid` header field to include the "key ID" with the JWT.
 
 ```php
-$keys = [
+$availableKeys = [
     'key_1' => 'J5hZTw1vtee0PGaoAuaW',
     'key_2' => '8zUpiGcaPkNhNGi8oyrq',
     'key_3' => 'RfxRP43BIKoSQ7P1GfeO',
 ];
 
-$jwt->setHeaderField('kid', 'key_2');
+// Decide which key to use for the JWT
+$keyId = 'key_2';
 
-$encodedJwt = $jwt->encode($keys['key_2']);
+// Include the key ID ("kid") in the JWT's header
+$jwt = MyJWT::create('HS256');
+$jwt->setHeaderField('kid', $keyId);
+
+$encodedJwt = $jwt->encode($availableKeys[$keyId]);
 ```
 
-If you use this approach, all you have to do when verifying the JWT is to provide the `JWT::verify()` method with the `$keys` array and it will automatically look-up and use the correct key.
+If you use this approach, all you have to do when verifying the JWT is to provide the `JWT::verify()` method with `$availableKeys` and it will automatically look-up and use the correct key.
 
 ```php
 $decodedJwt = MyJWT::decode($encodedJwt);
-$decodedJwt->verify($keys);
-```
-
-### Exceptions
-
-This library throws a variety of different exceptions in order to allow for different actions to be taken depending on what exactly it was that went wrong. However, all of these exceptions extends `Lindelius\JWT\Exception\JwtException`, making it possible to catch **any** exception thrown by this library without having to list all of them.
-
-```php
-try {
-
-    $jwt = MyJWT::decode($encodedJwt);
-    $jwt->verify(DECODE_KEY);
-
-} catch (\Lindelius\JWT\Exception\JwtException $exception) {
-    // This catches any exception thrown by the library
-}
+$decodedJwt->verify($availableKeys);
 ```
 
 ## Benchmarking
 
 This library is using [PHPBench](https://github.com/phpbench/phpbench) for benchmarking.
 
-You can easily benchmark the library on your own system by running the following command from the library's root folder.
+You can benchmark the library on your own system by running the following command from the library's root folder.
 
 ```
 ./vendor/bin/phpbench run benchmarks/ --report=default
