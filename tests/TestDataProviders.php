@@ -19,7 +19,6 @@ trait TestDataProviders
             [0.07],
             [null],
             [new \stdClass()],
-            [''],
             [false],
         ];
     }

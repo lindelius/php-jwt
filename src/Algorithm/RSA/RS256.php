@@ -19,7 +19,7 @@ trait RS256
      */
     protected function encodeWithRS256($key, string $dataToSign): ?string
     {
-        if (empty($key) || (!is_string($key) && !is_resource($key))) {
+        if (!is_string($key) && !is_resource($key)) {
             throw new InvalidKeyException('Invalid key.');
         }
 
@@ -41,7 +41,7 @@ trait RS256
      */
     protected function verifyWithRS256($key, string $dataToSign, string $signature): bool
     {
-        if (empty($key) || (!is_string($key) && !is_resource($key))) {
+        if (!is_string($key) && !is_resource($key)) {
             throw new InvalidKeyException('Invalid key.');
         }
 

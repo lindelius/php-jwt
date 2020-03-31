@@ -19,7 +19,7 @@ trait RS512
      */
     protected function encodeWithRS512($key, string $dataToSign): ?string
     {
-        if (empty($key) || (!is_string($key) && !is_resource($key))) {
+        if (!is_string($key) && !is_resource($key)) {
             throw new InvalidKeyException('Invalid key.');
         }
 
@@ -41,7 +41,7 @@ trait RS512
      */
     protected function verifyWithRS512($key, string $dataToSign, string $signature): bool
     {
-        if (empty($key) || (!is_string($key) && !is_resource($key))) {
+        if (!is_string($key) && !is_resource($key)) {
             throw new InvalidKeyException('Invalid key.');
         }
 

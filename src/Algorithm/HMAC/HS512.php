@@ -19,7 +19,7 @@ trait HS512
      */
     protected function encodeWithHS512($key, string $dataToSign): ?string
     {
-        if (empty($key) || !is_string($key)) {
+        if (!is_string($key)) {
             throw new InvalidKeyException('Invalid key.');
         }
 
@@ -37,7 +37,7 @@ trait HS512
      */
     protected function verifyWithHS512($key, string $dataToSign, string $signature): bool
     {
-        if (empty($key) || !is_string($key)) {
+        if (!is_string($key)) {
             throw new InvalidKeyException('Invalid key.');
         }
 

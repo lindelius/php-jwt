@@ -19,7 +19,7 @@ trait HS256
      */
     protected function encodeWithHS256($key, string $dataToSign): ?string
     {
-        if (empty($key) || !is_string($key)) {
+        if (!is_string($key)) {
             throw new InvalidKeyException('Invalid key.');
         }
 
@@ -37,7 +37,7 @@ trait HS256
      */
     protected function verifyWithHS256($key, string $dataToSign, string $signature): bool
     {
-        if (empty($key) || !is_string($key)) {
+        if (!is_string($key)) {
             throw new InvalidKeyException('Invalid key.');
         }
 

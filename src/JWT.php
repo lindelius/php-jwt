@@ -487,8 +487,10 @@ abstract class JWT implements Iterator
     protected function verifyExpClaim(): void
     {
         if (array_key_exists('exp', $this->claims)) {
-            if (strval($this->claims['exp']) == intval($this->claims['exp'])) {
-                if ($this->claims['exp'] < (time() - static::$leeway)) {
+            $exp = $this->claims['exp'];
+
+            if (is_numeric($exp) && strval($exp) == intval($exp)) {
+                if ($exp < (time() - static::$leeway)) {
                     throw new ExpiredJwtException('The JWT has expired.');
                 }
             } else {
@@ -507,8 +509,10 @@ abstract class JWT implements Iterator
     protected function verifyIatClaim(): void
     {
         if (array_key_exists('iat', $this->claims)) {
-            if (strval($this->claims['iat']) == intval($this->claims['iat'])) {
-                if ($this->claims['iat'] > (time() + static::$leeway)) {
+            $iat = $this->claims['iat'];
+
+            if (is_numeric($iat) && strval($iat) == intval($iat)) {
+                if ($iat > (time() + static::$leeway)) {
                     throw new BeforeValidException('The JWT is not yet valid.');
                 }
             } else {
@@ -527,10 +531,12 @@ abstract class JWT implements Iterator
     protected function verifyIssClaim($issuer): void
     {
         if (array_key_exists('iss', $this->claims)) {
-            if (is_string($this->claims['iss'])) {
+            $foundIssuer = $this->claims['iss'];
+
+            if (is_string($foundIssuer)) {
                 $issuer = is_array($issuer) ? $issuer : [$issuer];
 
-                if (!in_array($this->claims['iss'], $issuer)) {
+                if (!in_array($foundIssuer, $issuer)) {
                     throw new InvalidJwtException('Invalid JWT issuer.');
                 }
             } else {
@@ -549,8 +555,10 @@ abstract class JWT implements Iterator
     protected function verifyNbfClaim(): void
     {
         if (array_key_exists('nbf', $this->claims)) {
-            if (strval($this->claims['nbf']) == intval($this->claims['nbf'])) {
-                if ($this->claims['nbf'] > (time() + static::$leeway)) {
+            $nbf = $this->claims['nbf'];
+
+            if (is_numeric($nbf) && strval($nbf) == intval($nbf)) {
+                if ($nbf > (time() + static::$leeway)) {
                     throw new BeforeValidException('The JWT is not yet valid.');
                 }
             } else {

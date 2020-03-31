@@ -19,7 +19,7 @@ trait RS384
      */
     protected function encodeWithRS384($key, string $dataToSign): ?string
     {
-        if (empty($key) || (!is_string($key) && !is_resource($key))) {
+        if (!is_string($key) && !is_resource($key)) {
             throw new InvalidKeyException('Invalid key.');
         }
 
@@ -41,7 +41,7 @@ trait RS384
      */
     protected function verifyWithRS384($key, string $dataToSign, string $signature): bool
     {
-        if (empty($key) || (!is_string($key) && !is_resource($key))) {
+        if (!is_string($key) && !is_resource($key)) {
             throw new InvalidKeyException('Invalid key.');
         }
 
