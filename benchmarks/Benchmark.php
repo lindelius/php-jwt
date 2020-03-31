@@ -43,7 +43,7 @@ abstract class Benchmark
     public function benchDecode(): void
     {
         $decodedJwt = BenchmarkJWT::decode(static::$encodedJwt);
-        $decodedJwt->verify(static::$publicKey, static::$audience);
+        $decodedJwt->verify(static::$publicKey, ['aud' => static::$audience]);
     }
 
     /**
@@ -67,10 +67,7 @@ abstract class Benchmark
     {
         // Create an encoded JWT to use when benchmarking the decoding process
         if (empty(static::$encodedJwt)) {
-            static::$encodedJwt = static::getEncodedJwt(
-                static::$algorithm,
-                static::$privateKey
-            );
+            static::$encodedJwt = static::getEncodedJwt(static::$algorithm, static::$privateKey);
         }
     }
 
@@ -84,7 +81,7 @@ abstract class Benchmark
      */
     public static function getEncodedJwt($algorithm, $key): string
     {
-        $jwt = new BenchmarkJWT($algorithm);
+        $jwt = BenchmarkJWT::create($algorithm);
 
         $jwt->aud = static::$audience;
         $jwt->exp = time() + (60 * 20);
