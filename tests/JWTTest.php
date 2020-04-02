@@ -279,30 +279,4 @@ class JWTTest extends TestCase
     {
         TestJWT::decode('eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.U29tZXRoaW5nIG90aGVyIHRoYW4gSlNPTg.yQz7d3ZjXJ508tZedOxG3aZPEUVltphXrGFz6lE6Jhk');
     }
-
-    /**
-     * @throws \RuntimeException
-     * @throws \SebastianBergmann\RecursionContext\Exception
-     */
-    public function testIteratorImplementation()
-    {
-        $jwt = TestJWT::create(TestJWT::HS256);
-
-        $jwt->setClaim('a', 1);
-        $jwt->setClaim('b', 2);
-        $jwt->setClaim('c', 3);
-
-        /**
-         * Get all of the JWT's claims using the iterator implementation.
-         */
-        $claims = [];
-
-        foreach ($jwt as $claim => $value) {
-            $claims[$claim] = $value;
-        }
-
-        $this->assertEquals($jwt->a, $claims['a'] ?? 'missing_value');
-        $this->assertEquals($jwt->b, $claims['b'] ?? 'missing_value');
-        $this->assertEquals($jwt->c, $claims['c'] ?? 'missing_value');
-    }
 }

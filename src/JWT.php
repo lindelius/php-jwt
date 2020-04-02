@@ -2,7 +2,6 @@
 
 namespace Lindelius\JWT;
 
-use Iterator;
 use Lindelius\JWT\Exception\BeforeValidException;
 use Lindelius\JWT\Exception\ExpiredJwtException;
 use Lindelius\JWT\Exception\InvalidJwtException;
@@ -14,7 +13,7 @@ use Lindelius\JWT\Exception\UnsupportedAlgorithmException;
 /**
  * An abstract base class for JWT models.
  */
-abstract class JWT implements Iterator
+abstract class JWT
 {
     public const HS256 = 'HS256';
     public const HS384 = 'HS384';
@@ -120,17 +119,6 @@ abstract class JWT implements Iterator
     }
 
     /**
-     * Get the value of the "current" claim.
-     *
-     * @see https://www.php.net/manual/en/iterator.current.php
-     * @return mixed
-     */
-    public function current()
-    {
-        return current($this->claims);
-    }
-
-    /**
      * Encode the JWT object and return the resulting hash.
      *
      * @param  mixed $key
@@ -208,39 +196,6 @@ abstract class JWT implements Iterator
     }
 
     /**
-     * Get the name of the "current" claim.
-     *
-     * @see https://www.php.net/manual/en/iterator.key.php
-     * @return mixed
-     */
-    public function key()
-    {
-        return key($this->claims);
-    }
-
-    /**
-     * Advance the iterator to the "next" claim.
-     *
-     * @see https://www.php.net/manual/en/iterator.next.php
-     * @return void
-     */
-    public function next(): void
-    {
-        next($this->claims);
-    }
-
-    /**
-     * Rewind the claims iterator.
-     *
-     * @see https://www.php.net/manual/en/iterator.rewind.php
-     * @return void
-     */
-    public function rewind(): void
-    {
-        reset($this->claims);
-    }
-
-    /**
      * Set a new value for a given claim.
      *
      * @param  string $name
@@ -275,17 +230,6 @@ abstract class JWT implements Iterator
     }
 
     /**
-     * Check whether the current position in the claims array is valid.
-     *
-     * @see https://www.php.net/manual/en/iterator.valid.php
-     * @return bool
-     */
-    public function valid(): bool
-    {
-        return $this->key() !== null && $this->key() !== false;
-    }
-
-    /**
      * Verify that the JWT is correctly formatted and that the given signature
      * is valid.
      *
@@ -307,10 +251,13 @@ abstract class JWT implements Iterator
             throw new InvalidJwtException('Unable to verify the signature due to an invalid JWT hash.');
         }
 
+        $dataToSign = $segments[0] . '.' . $segments[1];
+        $signature  = url_safe_base64_decode($segments[2]);
+
         $this->verifySignature(
             $this->findDecodeKey($key),
-            $segments[0] . '.' . $segments[1],
-            url_safe_base64_decode($segments[2])
+            $dataToSign,
+            $signature
         );
 
         $this->verifyExpClaim();
