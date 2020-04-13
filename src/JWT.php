@@ -289,13 +289,15 @@ abstract class JWT
      */
     public function decodeAndInitialize(string $hash): void
     {
+        $this->reset();
+
+        // Decode the JWT's segments
         $segments = explode('.', $hash);
 
         if (count($segments) !== 3) {
             throw new InvalidJwtException('Unexpected number of JWT segments.', $this);
         }
 
-        // Decode the JWT's segments
         if (false === ($decodedHeader = url_safe_base64_decode($segments[0]))) {
             throw new InvalidJwtException('Invalid header encoding.', $this);
         }
@@ -335,6 +337,19 @@ abstract class JWT
 
         // Use the original hash to prevent verification failures due to encoding discrepancies
         $this->hash = $hash;
+    }
+
+    /**
+     * Reset the internal state of the JWT object.
+     *
+     * @return void
+     */
+    public function reset(): void
+    {
+        $this->algorithm = null;
+        $this->claims    = [];
+        $this->hash      = null;
+        $this->header    = [];
     }
 
     /**
