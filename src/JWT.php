@@ -245,7 +245,11 @@ abstract class JWT
      */
     public function verify($key, array $expectedClaims = []): bool
     {
-        $segments = explode('.', $this->hash ?: '');
+        if (empty($this->hash)) {
+            throw new InvalidJwtException('Unable to verify a modified JWT.', $this);
+        }
+
+        $segments = explode('.', $this->hash);
 
         if (count($segments) !== 3) {
             throw new InvalidJwtException('Unable to verify the signature due to an invalid JWT hash.', $this);
