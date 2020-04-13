@@ -35,7 +35,8 @@ composer require "lindelius/php-jwt=^0.9"
 
 ## Usage
 
-Since this library is taking an OOP approach to JWT management, the first step is, unsurprisingly, to create a JWT model. All you have to do, though, is to extend the abstract `Lindelius\JWT\JWT` class and pick an algorithm, and you're good to go.
+**Step 1.** Extend the abstract `JWT` model and pick an algorithm.
+
 ```php
 use Lindelius\JWT\Algorithm\HMAC\HS256;
 use Lindelius\JWT\JWT;
@@ -46,25 +47,23 @@ class MyJWT extends JWT
 }
 ```
 
-The next step is to start using the JWT model to create JWTs.
-
-Surprisingly quick and easy, wasn't it?
+**Step 2.** Start creating your JWTs :)
 
 ```php
 $jwt = MyJWT::create('HS256');
 
 // Include whatever data is required by your use case
 $jwt->field = 'value';
-$jwt->other = ['field' => 'value'];
+$jwt->other = ['nested_field' => 'value'];
 
 // Let the JWT expire after 20 minutes (optional, but recommended)
 $jwt->exp = time() + (60 * 20);
 
 // Encode the JWT using a key suitable for the chosen algorithm
-$encodedJwt = $jwt->encode('SOME_RANDOM_HMAC_KEY');
+$encodedJwt = $jwt->encode('YOUR_HMAC_KEY');
 ```
 
-The final step (unless your application is not actually consuming any JWTs, then the previous step was the last one) is to decode and verify the JWTs that you are given.
+**Step 3.** Decode the JWTs that are sent back.
 
 ```php
 $decodedJwt = MyJWT::decode($encodedJwt);
