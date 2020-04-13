@@ -11,7 +11,7 @@ use Lindelius\JWT\Algorithm\RSA\RS512;
 use Lindelius\JWT\JWT;
 
 /**
- * Class TestJWT
+ * A JWT model including support for all built-in algorithms.
  */
 class TestJWT extends JWT
 {

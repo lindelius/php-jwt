@@ -248,7 +248,7 @@ abstract class JWT
         $segments = explode('.', $this->hash ?: '');
 
         if (count($segments) !== 3) {
-            throw new InvalidJwtException('Unable to verify the signature due to an invalid JWT hash.');
+            throw new InvalidJwtException('Unable to verify the signature due to an invalid JWT hash.', $this);
         }
 
         $dataToSign = $segments[0] . '.' . $segments[1];
@@ -288,20 +288,20 @@ abstract class JWT
         $segments = explode('.', $hash);
 
         if (count($segments) !== 3) {
-            throw new InvalidJwtException('Unexpected number of JWT segments.');
+            throw new InvalidJwtException('Unexpected number of JWT segments.', $this);
         }
 
         // Decode the JWT's segments
         if (false === ($decodedHeader = url_safe_base64_decode($segments[0]))) {
-            throw new InvalidJwtException('Invalid header encoding.');
+            throw new InvalidJwtException('Invalid header encoding.', $this);
         }
 
         if (false === ($decodedClaims = url_safe_base64_decode($segments[1]))) {
-            throw new InvalidJwtException('Invalid claims encoding.');
+            throw new InvalidJwtException('Invalid claims encoding.', $this);
         }
 
         if (false === url_safe_base64_decode($segments[2])) {
-            throw new InvalidJwtException('Invalid signature encoding.');
+            throw new InvalidJwtException('Invalid signature encoding.', $this);
         }
 
         // Validate the decoded data
@@ -311,13 +311,13 @@ abstract class JWT
         if (is_object($claims)) {
             $claims = (array) $claims;
         } elseif (!is_array($claims)) {
-            throw new InvalidJwtException('Invalid set of JWT claims.');
+            throw new InvalidJwtException('Invalid set of JWT claims.', $this);
         }
 
         if (is_object($header)) {
             $header = (array) $header;
         } elseif (!is_array($header)) {
-            throw new InvalidJwtException('Invalid JWT header.');
+            throw new InvalidJwtException('Invalid JWT header.', $this);
         }
 
         // Populate the JWT with the decoded data
@@ -347,11 +347,11 @@ abstract class JWT
             $keyId = $this->header['kid'] ?? null;
 
             if (!is_string($keyId)) {
-                throw new InvalidJwtException('Unable to find decode key due to an invalid "kid" value.');
+                throw new InvalidJwtException('Unable to find decode key due to an invalid "kid" value.', $this);
             }
 
             if (!array_key_exists($keyId, $key)) {
-                throw new InvalidKeyException('Unable to find the correct decode key.');
+                throw new InvalidKeyException('Unable to find the correct decode key.', $this);
             }
 
             return $key[$keyId];
@@ -374,7 +374,7 @@ abstract class JWT
         $method = 'encodeWith' . $this->algorithm;
 
         if (!method_exists($this, $method)) {
-            throw new UnsupportedAlgorithmException(sprintf('Unsupported algorithm ("%s").', $this->algorithm));
+            throw new UnsupportedAlgorithmException(sprintf('Unsupported algorithm ("%s").', $this->algorithm), $this);
         }
 
         $signature = call_user_func_array(
@@ -383,7 +383,7 @@ abstract class JWT
         );
 
         if (empty($signature) || !is_string($signature)) {
-            throw new JwtException('Unable to sign the JWT.');
+            throw new JwtException('Unable to sign the JWT.', $this);
         }
 
         return $signature;
@@ -409,7 +409,7 @@ abstract class JWT
                 if (is_string($value) && $index === $expectedIndex) {
                     $expectedIndex++;
                 } else {
-                    throw new InvalidJwtException('Invalid "aud" value.');
+                    throw new InvalidJwtException('Invalid "aud" value.', $this);
                 }
             }
 
@@ -420,7 +420,7 @@ abstract class JWT
                 }
             }
 
-            throw new InvalidJwtException('Invalid JWT audience.');
+            throw new InvalidJwtException('Invalid JWT audience.', $this);
         }
     }
 
@@ -438,10 +438,10 @@ abstract class JWT
 
             if (is_numeric($exp) && strval($exp) == intval($exp)) {
                 if ($exp < (time() - static::$leeway)) {
-                    throw new ExpiredJwtException('The JWT has expired.');
+                    throw new ExpiredJwtException('The JWT has expired.', $this);
                 }
             } else {
-                throw new InvalidJwtException('Invalid "exp" value.');
+                throw new InvalidJwtException('Invalid "exp" value.', $this);
             }
         }
     }
@@ -460,10 +460,10 @@ abstract class JWT
 
             if (is_numeric($iat) && strval($iat) == intval($iat)) {
                 if ($iat > (time() + static::$leeway)) {
-                    throw new BeforeValidException('The JWT is not yet valid.');
+                    throw new BeforeValidException('The JWT is not yet valid.', $this);
                 }
             } else {
-                throw new InvalidJwtException('Invalid "iat" value.');
+                throw new InvalidJwtException('Invalid "iat" value.', $this);
             }
         }
     }
@@ -484,10 +484,10 @@ abstract class JWT
                 $issuer = is_array($issuer) ? $issuer : [$issuer];
 
                 if (!in_array($foundIssuer, $issuer)) {
-                    throw new InvalidJwtException('Invalid JWT issuer.');
+                    throw new InvalidJwtException('Invalid JWT issuer.', $this);
                 }
             } else {
-                throw new InvalidJwtException('Invalid "iss" value.');
+                throw new InvalidJwtException('Invalid "iss" value.', $this);
             }
         }
     }
@@ -506,10 +506,10 @@ abstract class JWT
 
             if (is_numeric($nbf) && strval($nbf) == intval($nbf)) {
                 if ($nbf > (time() + static::$leeway)) {
-                    throw new BeforeValidException('The JWT is not yet valid.');
+                    throw new BeforeValidException('The JWT is not yet valid.', $this);
                 }
             } else {
-                throw new InvalidJwtException('Invalid "nbf" value.');
+                throw new InvalidJwtException('Invalid "nbf" value.', $this);
             }
         }
     }
@@ -529,7 +529,7 @@ abstract class JWT
         $method = 'verifyWith' . $this->algorithm;
 
         if (!method_exists($this, $method)) {
-            throw new UnsupportedAlgorithmException(sprintf('Unsupported algorithm ("%s").', $this->algorithm));
+            throw new UnsupportedAlgorithmException(sprintf('Unsupported algorithm ("%s").', $this->algorithm), $this);
         }
 
         $verified = call_user_func_array(
@@ -538,7 +538,7 @@ abstract class JWT
         );
 
         if ($verified !== true) {
-            throw new InvalidSignatureException('Invalid JWT signature.');
+            throw new InvalidSignatureException('Invalid JWT signature.', $this);
         }
     }
 
