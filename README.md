@@ -63,7 +63,7 @@ $jwt->exp = time() + (60 * 20);
 $encodedJwt = $jwt->encode('YOUR_HMAC_KEY');
 ```
 
-**Step 3.** Decode the JWTs that are sent back.
+**Step 3.** Decode and verify the JWTs that are sent back.
 
 ```php
 $decodedJwt = MyJWT::decode($encodedJwt);
@@ -74,6 +74,15 @@ $other = $decodedJwt->other;
 
 // HOWEVER, do NOT forget to verify the data before trusting it
 $decodedJwt->verify('THE_SAME_HMAC_KEY');
+```
+
+If you are making use of any of the claims with built-in support (`aud` or `iss`), you may verify them by passing the expected values to the `verify()` method (as seen below).
+
+```php
+$decodedJwt->verify('THE_SAME_HMAC_KEY', [
+    'aud' => 'https://my-application.tld', // Single valid audience
+    'iss' => ['Expected Issuer', 'Alternate Issuer'], // Multiple valid issuers
+]); 
 ```
 
 ### Algorithm Choices
