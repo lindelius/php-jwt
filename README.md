@@ -20,7 +20,6 @@ This library conforms to [RFC 7519](https://tools.ietf.org/html/rfc7519), with t
 - [Installation](#installation)
 - [Usage](#usage)
     - [Algorithm Choices](#algorithm-choices)
-    - [Audiences](#audiences)
     - [Leeway Time](#leeway-time)
     - [Multiple Encryption Keys](#multiple-encryption-keys)
 - [Benchmarking](#benchmarking)
