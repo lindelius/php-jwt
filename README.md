@@ -60,13 +60,13 @@ $jwt->other = ['nested_field' => 'value'];
 $jwt->exp = time() + (60 * 20);
 
 // Encode the JWT using a key suitable for the chosen algorithm
-$encodedJwt = $jwt->encode('YOUR_HMAC_KEY');
+$encodedJwtHash = $jwt->encode('YOUR_HMAC_KEY');
 ```
 
 **Step 3.** Decode and verify the JWTs that are sent back.
 
 ```php
-$decodedJwt = MyJWT::decode($encodedJwt);
+$decodedJwt = MyJWT::decode($encodedJwtHash);
 
 // The data is available immediately after decode
 $field = $decodedJwt->field;
@@ -80,8 +80,13 @@ If you are making use of any of the claims with built-in support (`aud` or `iss`
 
 ```php
 $decodedJwt->verify('THE_SAME_HMAC_KEY', [
-    'aud' => 'https://my-application.tld', // Single valid audience
-    'iss' => ['Expected Issuer', 'Alternate Issuer'], // Multiple valid issuers
+
+    // Single valid audience
+    'aud' => 'https://my-application.tld',
+
+    // Multiple valid issuers
+    'iss' => ['Expected Issuer', 'Alternate Issuer'],
+
 ]); 
 ```
 
