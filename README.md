@@ -27,11 +27,13 @@ This library conforms to [RFC 7519](https://tools.ietf.org/html/rfc7519), with t
 
 ## Installation
 
-In order to install this library, issue the following command from your project's root folder:
+If you're using Composer, you may install this library by running the following command from your project's root folder:
 
 ```
 composer require "lindelius/php-jwt=^0.9"
 ```
+
+You may also manually download the library by navigating to the "Releases" page and then expanding the "Assets" section of the latest release.
 
 ## Usage
 
