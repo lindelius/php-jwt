@@ -1,5 +1,7 @@
 # php-jwt
 
+[![CircleCI](https://circleci.com/gh/lindelius/php-jwt.svg?style=shield)](https://circleci.com/gh/lindelius/php-jwt)
+
 A convenience library for working with JSON Web Tokens (JWT) in PHP.
 
 This library conforms to [RFC 7519](https://tools.ietf.org/html/rfc7519), with the exception of not allowing unsigned JWTs (the "none" algorithm), and has built-in support for the following claims:

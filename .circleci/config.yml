@@ -1,16 +1,22 @@
 version: 2.1
 
-executors:
-  php72:
-    docker:
-      - image: circleci/php:7.2-stretch
-    resource_class: small
-
 jobs:
   unit-tests:
-    executor: php72
+    parameters:
+      php_version:
+        default: "7.2"
+        type: string
+    docker:
+      - image: cimg/php:<< parameters.php_version >>
+    resource_class: small
     steps:
       - checkout
+      - run:
+          name: "Install PHP extensions"
+          command: |-
+            sudo apt update
+            sudo apt install php<< parameters.php_version>>-intl
+            sudo phpenmod intl
       - run: 
           name: "Install dependencies"
           command: >-
@@ -23,4 +29,7 @@ jobs:
 workflows:
   all:
     jobs:
-      - unit-tests
+      - unit-tests:
+          matrix:
+            parameters:
+              php_version: [ "7.2", "7.4", "8.0" ]
