@@ -1,0 +1,26 @@
+version: 2.1
+
+executors:
+  php72:
+    docker:
+      - image: circleci/php:7.2-stretch
+    resource_class: small
+
+jobs:
+  unit-tests:
+    executor: php72
+    steps:
+      - checkout
+      - run: 
+          name: "Install dependencies"
+          command: >-
+            composer install
+      - run: 
+          name: "Run unit tests"
+          command: >-
+            vendor/bin/phpunit
+
+workflows:
+  all:
+    jobs:
+      - unit-tests

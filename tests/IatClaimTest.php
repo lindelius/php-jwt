@@ -2,20 +2,18 @@
 
 namespace Lindelius\JWT\Tests;
 
+use Lindelius\JWT\Exception\BeforeValidException;
+use Lindelius\JWT\Exception\JwtException;
 use Lindelius\JWT\Tests\JWT\LeewayJWT;
 use PHPUnit\Framework\TestCase;
 
-/**
- * Class IatClaimTest
- */
-class IatClaimTest extends TestCase
+final class IatClaimTest extends TestCase
 {
     /**
-     * @throws \Lindelius\JWT\Exception\JwtException
-     * @throws \RuntimeException
-     * @throws \SebastianBergmann\RecursionContext\Exception
+     * @return void
+     * @throws JwtException
      */
-    public function testDecodeWithIatWithinLeewayTime()
+    public function testDecodeWithIatWithinLeewayTime(): void
     {
         $jwt = LeewayJWT::create(LeewayJWT::HS256);
         $jwt->setClaim('iat', time() + 30);
@@ -27,12 +25,13 @@ class IatClaimTest extends TestCase
     }
 
     /**
-     * @throws \Lindelius\JWT\Exception\JwtException
-     * @throws \RuntimeException
-     * @expectedException \Lindelius\JWT\Exception\BeforeValidException
+     * @return void
+     * @throws JwtException
      */
-    public function testDecodeWithIatOutsideOfLeewayTime()
+    public function testDecodeWithIatOutsideOfLeewayTime(): void
     {
+        $this->expectException(BeforeValidException::class);
+
         $jwt = LeewayJWT::create(LeewayJWT::HS256);
         $jwt->setClaim('iat', time() + 100);
 

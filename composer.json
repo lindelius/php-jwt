@@ -17,8 +17,8 @@
     },
     "require-dev": {
         "ext-openssl": "*",
-        "phpbench/phpbench": "^0.14",
-        "phpunit/phpunit": "^7.0"
+        "phpbench/phpbench": "^0.17",
+        "phpunit/phpunit": "^8.5"
     },
     "autoload": {
         "psr-4": {
@@ -32,6 +32,11 @@
         "psr-4": {
             "Lindelius\\JWT\\Benchmarks\\": "benchmarks/",
             "Lindelius\\JWT\\Tests\\": "tests/"
+        }
+    },
+    "config": {
+        "platform": {
+            "php": "7.2"
         }
     }
 }

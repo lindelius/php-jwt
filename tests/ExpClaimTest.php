@@ -2,20 +2,18 @@
 
 namespace Lindelius\JWT\Tests;
 
+use Lindelius\JWT\Exception\ExpiredJwtException;
+use Lindelius\JWT\Exception\JwtException;
 use Lindelius\JWT\Tests\JWT\LeewayJWT;
 use PHPUnit\Framework\TestCase;
 
-/**
- * Class ExpClaimTest
- */
-class ExpClaimTest extends TestCase
+final class ExpClaimTest extends TestCase
 {
     /**
-     * @throws \Lindelius\JWT\Exception\JwtException
-     * @throws \RuntimeException
-     * @throws \SebastianBergmann\RecursionContext\Exception
+     * @return void
+     * @throws JwtException
      */
-    public function testDecodeWithExpWithinLeewayTime()
+    public function testDecodeWithExpWithinLeewayTime(): void
     {
         $jwt = LeewayJWT::create(LeewayJWT::HS256);
         $jwt->setClaim('exp', time() - 30);
@@ -27,11 +25,13 @@ class ExpClaimTest extends TestCase
     }
 
     /**
-     * @throws \Lindelius\JWT\Exception\JwtException
-     * @expectedException \Lindelius\JWT\Exception\ExpiredJwtException
+     * @return void
+     * @throws JwtException
      */
-    public function testDecodeWithExpOutsideOfLeewayTime()
+    public function testDecodeWithExpOutsideOfLeewayTime(): void
     {
+        $this->expectException(ExpiredJwtException::class);
+
         $jwt = LeewayJWT::create(LeewayJWT::HS256);
         $jwt->setClaim('exp', time() - 100);
 
