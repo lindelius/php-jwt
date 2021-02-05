@@ -2,9 +2,8 @@
 
 namespace Lindelius\JWT\Tests;
 
-/**
- * Trait TestDataProviders
- */
+use stdClass;
+
 trait TestDataProviders
 {
     /**
@@ -12,13 +11,13 @@ trait TestDataProviders
      *
      * @return array[]
      */
-    public function invalidKeyProvider()
+    public function invalidKeyProvider(): array
     {
         return [
             [1],
             [0.07],
             [null],
-            [new \stdClass()],
+            [new stdClass()],
             [false],
         ];
     }
@@ -28,13 +27,12 @@ trait TestDataProviders
      *
      * @return array[]
      */
-    public function invalidHashProvider()
+    public function invalidHashProvider(): array
     {
         return [
             [['an_array']],
             [null],
-            [new \stdClass()],
-            [curl_init()],
+            [new stdClass()],
         ];
     }
 
@@ -43,12 +41,11 @@ trait TestDataProviders
      *
      * @return array[]
      */
-    public function invalidAlgorithmProvider()
+    public function invalidAlgorithmProvider(): array
     {
         return [
             [['an_array']],
-            [new \stdClass()],
-            [curl_init()],
+            [new stdClass()],
         ];
     }
 }

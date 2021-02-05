@@ -2,20 +2,19 @@
 
 namespace Lindelius\JWT\Tests;
 
+use Lindelius\JWT\Exception\InvalidJwtException;
+use Lindelius\JWT\Exception\JwtException;
 use Lindelius\JWT\Tests\JWT\TestJWT;
 use PHPUnit\Framework\TestCase;
 
-/**
- * Class IssClaimTest
- */
-class IssClaimTest extends TestCase
+final class IssClaimTest extends TestCase
 {
     /**
      * The value of the "iss" claim, if included, MUST be a string.
      *
      * @return array
      */
-    public function invalidIssuerProvider()
+    public function invalidIssuerProvider(): array
     {
         return [
 
@@ -29,15 +28,16 @@ class IssClaimTest extends TestCase
     }
 
     /**
-     * @param  mixed $iss
-     * @throws \Lindelius\JWT\Exception\JwtException
-     * @throws \RuntimeException
-     * @expectedException \Lindelius\JWT\Exception\InvalidJwtException
-     * @expectedExceptionMessage Invalid "iss" value.
-     * @dataProvider             invalidIssuerProvider
+     * @dataProvider invalidIssuerProvider
+     * @param mixed $iss
+     * @return void
+     * @throws JwtException
      */
-    public function testDecodeWithInvalidIssValue($iss)
+    public function testDecodeWithInvalidIssValue($iss): void
     {
+        $this->expectException(InvalidJwtException::class);
+        $this->expectExceptionMessage('Invalid "iss" value.');
+
         $jwt = TestJWT::create(TestJWT::HS256);
         $jwt->setClaim('iss', $iss);
 
@@ -46,11 +46,13 @@ class IssClaimTest extends TestCase
     }
 
     /**
-     * @throws \Lindelius\JWT\Exception\JwtException
-     * @expectedException \Lindelius\JWT\Exception\InvalidJwtException
+     * @return void
+     * @throws JwtException
      */
-    public function testDecodeWithInvalidIssuer()
+    public function testDecodeWithInvalidIssuer(): void
     {
+        $this->expectException(InvalidJwtException::class);
+
         $jwt = TestJWT::create(TestJWT::HS256);
         $jwt->setClaim('iss', 'Actual Issuer');
 
@@ -59,11 +61,13 @@ class IssClaimTest extends TestCase
     }
 
     /**
-     * @throws \Lindelius\JWT\Exception\JwtException
-     * @expectedException \Lindelius\JWT\Exception\InvalidJwtException
+     * @return void
+     * @throws JwtException
      */
-    public function testDecodeWithInvalidIssuerAmongSeveral()
+    public function testDecodeWithInvalidIssuerAmongSeveral(): void
     {
+        $this->expectException(InvalidJwtException::class);
+
         $jwt = TestJWT::create(TestJWT::HS256);
         $jwt->setClaim('iss', 'Actual Issuer');
 
@@ -72,11 +76,10 @@ class IssClaimTest extends TestCase
     }
 
     /**
-     * @throws \Lindelius\JWT\Exception\JwtException
-     * @throws \RuntimeException
-     * @throws \SebastianBergmann\RecursionContext\Exception
+     * @return void
+     * @throws JwtException
      */
-    public function testDecodeWithValidIssuer()
+    public function testDecodeWithValidIssuer(): void
     {
         $jwt = TestJWT::create(TestJWT::HS256);
         $jwt->setClaim('iss', 'Expected Issuer');
@@ -86,11 +89,10 @@ class IssClaimTest extends TestCase
     }
 
     /**
-     * @throws \Lindelius\JWT\Exception\JwtException
-     * @throws \RuntimeException
-     * @throws \SebastianBergmann\RecursionContext\Exception
+     * @return void
+     * @throws JwtException
      */
-    public function testDecodeWithValidIssuerAmongSeveral()
+    public function testDecodeWithValidIssuerAmongSeveral(): void
     {
         $jwt = TestJWT::create(TestJWT::HS256);
         $jwt->setClaim('iss', 'Expected Issuer');

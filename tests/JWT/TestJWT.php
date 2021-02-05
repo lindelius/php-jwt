@@ -10,9 +10,6 @@ use Lindelius\JWT\Algorithm\RSA\RS384;
 use Lindelius\JWT\Algorithm\RSA\RS512;
 use Lindelius\JWT\JWT;
 
-/**
- * A JWT model including support for all built-in algorithms.
- */
 class TestJWT extends JWT
 {
     use HS256, HS384, HS512, RS256, RS384, RS512;

@@ -2,9 +2,6 @@
 
 namespace Lindelius\JWT\Tests\JWT;
 
-/**
- * A JWT model that makes use of the leeway time functionality.
- */
 class LeewayJWT extends TestJWT
 {
     /**

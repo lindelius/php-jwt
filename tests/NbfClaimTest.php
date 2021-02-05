@@ -2,20 +2,18 @@
 
 namespace Lindelius\JWT\Tests;
 
+use Lindelius\JWT\Exception\BeforeValidException;
+use Lindelius\JWT\Exception\JwtException;
 use Lindelius\JWT\Tests\JWT\LeewayJWT;
 use PHPUnit\Framework\TestCase;
 
-/**
- * Class NbfClaimTest
- */
-class NbfClaimTest extends TestCase
+final class NbfClaimTest extends TestCase
 {
     /**
-     * @throws \Lindelius\JWT\Exception\JwtException
-     * @throws \RuntimeException
-     * @throws \SebastianBergmann\RecursionContext\Exception
+     * @return void
+     * @throws JwtException
      */
-    public function testDecodeWithNbfWithinLeewayTime()
+    public function testDecodeWithNbfWithinLeewayTime(): void
     {
         $jwt = LeewayJWT::create(LeewayJWT::HS256);
         $jwt->setClaim('nbf', time() + 30);
@@ -27,11 +25,13 @@ class NbfClaimTest extends TestCase
     }
 
     /**
-     * @throws \Lindelius\JWT\Exception\JwtException
-     * @expectedException \Lindelius\JWT\Exception\BeforeValidException
+     * @return void
+     * @throws JwtException
      */
-    public function testDecodeWithNbfOutsideOfLeewayTime()
+    public function testDecodeWithNbfOutsideOfLeewayTime(): void
     {
+        $this->expectException(BeforeValidException::class);
+
         $jwt = LeewayJWT::create(LeewayJWT::HS256);
         $jwt->setClaim('nbf', time() + 100);
 
