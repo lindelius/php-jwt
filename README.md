@@ -14,7 +14,7 @@ This library conforms to [RFC 7519](https://tools.ietf.org/html/rfc7519), with t
 
 ## Requirements
 
-- PHP 7.2
+- PHP 7.2, or higher
 - OpenSSL PHP extension (for certain algorithms)
 
 ## Table of Contents
@@ -28,10 +28,10 @@ This library conforms to [RFC 7519](https://tools.ietf.org/html/rfc7519), with t
 
 ## Installation
 
-If you're using Composer, you may install this library by running the following command from your project's root folder:
+If you are using Composer, you may install the latest version of this library by running the following command from your project's root folder:
 
 ```
-composer require "lindelius/php-jwt=^0.9"
+composer require lindelius/php-jwt
 ```
 
 You may also manually download the library by navigating to the "Releases" page and then expanding the "Assets" section of the latest release.
