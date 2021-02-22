@@ -33,5 +33,10 @@
             "Lindelius\\JWT\\Benchmarks\\": "benchmarks/",
             "Lindelius\\JWT\\Tests\\": "tests/"
         }
+    },
+    "config": {
+        "platform": {
+            "php": "7.2"
+        }
     }
 }
